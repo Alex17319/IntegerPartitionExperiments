@@ -10,9 +10,9 @@ namespace Executor
 {
 	//This project is a bunch of code around a maths problem I was investigating
 	//mostly out of curiosity (the problem was loosely related to the collatz
-	//conjecture, hence the naming).
+	//conjecture, hence some of the naming).
 
-	//The problem being investigated here is:
+	//The problem here is:
 	//Take two integers M (multiplier) and S (summand), and a target integer Z,
 	//and start at 1. Then, at each step either add S or multiply by a power of M,
 	//starting with the 1st power (ie. M itself) and then continuing to each consecutive
@@ -43,7 +43,7 @@ namespace Executor
 	//The first phrasing is what's being used when talking about 'binary decisions',
 	//or 'two-three decisions' in the case where M=2 and S=3.
 
-	//Much of this code was also designed around increasing efficiency - initially
+	//Much of this code was designed around increasing efficiency - initially
 	//it reached inputs of around 40,000 across several hours, now its been reaching
 	//inputs of 1 billion in around one hour or 100 million in roughly 2 hours,
 	//depending on the mode. However, these tests approach the limits of my computer's
