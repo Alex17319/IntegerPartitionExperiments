@@ -107,6 +107,7 @@ namespace Executor
 
 			//PrintNonTrivialZeros(maxZ: 100000000, toFile: false);
 			//PrintNonTrivialZeros_bitarray(maxZ: 100000, toFile: false);
+			//PrintNonTrivialZeros_bitarray(maxZ: 100000, toFile: false);
 
 			//PrintSortedTermOptions(max: 50000000);
 
@@ -144,9 +145,14 @@ namespace Executor
 			//when going up to 100000000, more zeroes start appearing at 93046723
 			//when going up to 100000000, zeroes continue past 100000000
 
-			PrintBinaryDecisionZMSFinderResults(maxZ: 200, maxMultiplier: 20, maxSummand: 20);
+			//PrintBinaryDecisionZMSFinderResults(maxZ: 200, maxMultiplier: 20, maxSummand: 20);
+			//PrintExpansionCounts_twoThreeDecisions(maxZ: 20000000);
+
+			//PrintTwoThreeExpansionRegister(100000);
 
 			Console.WriteLine(DateTime.Now);
+
+			Console.ReadLine();
 		}
 	}
 }
