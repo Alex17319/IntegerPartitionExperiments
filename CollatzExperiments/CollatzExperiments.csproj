@@ -64,6 +64,7 @@
     <Compile Include="TwoThreeDecisionZFinder.cs" />
     <Compile Include="UpwardTreedExpansionTerm.cs" />
     <Compile Include="Utils.cs" />
+    <Compile Include="ZeroTester.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />

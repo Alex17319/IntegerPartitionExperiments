@@ -135,6 +135,19 @@ namespace CollatzExperiments
 
 		public static List<long> GetNonTrivialZeros(int max) //capToMaximum = true
 		{
+			var expansionRegister = GetExpansionRegister(max);
+	
+			var nonTrivialZeros = new List<long>();
+			for (int i = 0; i < expansionRegister.Length; i++) {
+				if (i % 3 != 0 && expansionRegister[i] == 0) nonTrivialZeros.Add(i);
+			}
+			return nonTrivialZeros;
+		}
+
+		//Returns an array that, for each position corresponding to a result found, contains the exponents
+		//used on the highest power of 3 involved each time that result was reached, all encoded as binary flags.
+		public static LongChunkedArray<int> GetExpansionRegister(int max)
+		{
 			if (max > int.MaxValue) throw new ArgumentOutOfRangeException(
 				nameof(max),
 				max,
@@ -217,12 +230,8 @@ namespace CollatzExperiments
 					expansionRegister[decisionTracker.Current] |= 1 << decisionTracker.LastAddedThreeExponent;
 				}
 			}
-	
-			var nonTrivialZeros = new List<long>();
-			for (int i = 0; i < expansionRegister.Length; i++) {
-				if (i % 3 != 0 && expansionRegister[i] == 0) nonTrivialZeros.Add(i);
-			}
-			return nonTrivialZeros;
+
+			return expansionRegister;
 		}
 
 		//	static IEnumerable<KeyValuePair<long, char>> EnumerateBinaryDecisionSequenceResults_validatable(int max, BinaryDecisionTracker decisionTracker = null) //capToMaximum = true

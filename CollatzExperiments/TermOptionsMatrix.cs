@@ -44,8 +44,8 @@ namespace CollatzExperiments
 			=> option.ThreeExponent < TermOptions.Count
 			&& option.TwoExponent < TermOptions[option.ThreeExponent].Count;
 	
-		public static BigInteger SumColumnTo(ExpansionTerm option) => MathUtils.BigIntTwoToThe  (option.TwoExponent  ) * MathUtils.BitIntSumPowersOfThreeTo(option.ThreeExponent);
-		public static BigInteger SumRowTo   (ExpansionTerm option) => MathUtils.BigIntThreeToThe(option.ThreeExponent) * MathUtils.BitIntSumPowersOfTwoTo  (option.TwoExponent  );
+		public static BigInteger SumColumnTo(ExpansionTerm option) => MathUtils.BigIntTwoToThe  (option.TwoExponent  ) * MathUtils.BigIntSumPowersOfThreeTo(option.ThreeExponent);
+		public static BigInteger SumRowTo   (ExpansionTerm option) => MathUtils.BigIntThreeToThe(option.ThreeExponent) * MathUtils.BigIntSumPowersOfTwoTo  (option.TwoExponent  );
 	
 		public static BigInteger MinimumPathSum(ExpansionTerm startingPoint) => SumColumnTo(startingPoint);
 	

@@ -18,11 +18,11 @@ namespace CollatzExperiments
 		public static BigInteger BigIntTwoToThe(int power) => BigInteger.One << power;
 		public static int IntTwoToThe(int power) => ((int)1) << power;
 		public static long LongTwoToThe(int power) => ((long)1) << power;
-	
+
 		public static BigInteger BigIntThreeToThe(int power) => power < someBigIntThreePowers.Length ? someBigIntThreePowers[power] : BigInteger.Pow(3, power);
 		public static int IntThreeToThe(int power) => intThreePowers[power]; //out of bounds error if overflow, good enough
 		public static long LongThreeToThe(int power) => longThreePowers[power]; //out of bounds error if overflow, good enough
-	
+
 		//Numbers from: http://www.quadibloc.com/crypto/t3.htm
 		private readonly static int[] intThreePowers = {
 			1, 3, 9, 27, 81, 243, 729, 2187, 6561, 19683, 59049, 177147, 531441, 1594323, 4782969, 14348907, 43046721, 129140163, 387420489, 1162261467
@@ -64,7 +64,7 @@ namespace CollatzExperiments
 			BigInteger.Parse("147808829414345923316083210206383297601"), BigInteger.Parse("443426488243037769948249630619149892803"),
 			BigInteger.Parse("1330279464729113309844748891857449678409"), BigInteger.Parse("3990838394187339929534246675572349035227")
 		};
-	
+
 		//Based on https://stackoverflow.com/a/23000588/4149474 which is based on https://stackoverflow.com/a/11398748/4149474
 		//which is based on https://graphics.stanford.edu/~seander/bithacks.html#IntegerLogDeBruijn
 		//"It's correct for all inputs except 0. It returns 0 for 0 which may be valid for what you're using it for. The lines
@@ -107,11 +107,21 @@ namespace CollatzExperiments
 		  0, 9, 1, 10, 13, 21, 2, 29, 11, 14, 16, 18, 22, 25, 3, 30,
 		  8, 12, 20, 28, 15, 17, 24, 7, 19, 27, 23, 6, 26, 5, 4, 31
 		};
-	
+
 		//<summary>Returns 3^0 + 3^1 + 3^2 + ... + 3^maxPower</summary>
-		public static BigInteger BitIntSumPowersOfThreeTo(int maxPower) => (MathUtils.BigIntThreeToThe(maxPower + 1) - 1)/2;
+		public static BigInteger BigIntSumPowersOfThreeTo(int maxPower) => (BigIntThreeToThe(maxPower + 1) - 1)/2;
 		//<summary>Returns 2^0 + 2^1 + 2^2 + ... + 2^maxPower</summary>
-		public static BigInteger BitIntSumPowersOfTwoTo  (int maxPower) =>  MathUtils.BigIntTwoToThe(maxPower + 1) - 1;
+		public static BigInteger BigIntSumPowersOfTwoTo(int maxPower) => BigIntTwoToThe(maxPower + 1) - 1;
+
+		//<summary>Returns 3^0 + 3^1 + 3^2 + ... + 3^maxPower</summary>
+		public static long LongSumPowersOfThreeTo(int maxPower) => (LongThreeToThe(maxPower + 1) - 1)/2;
+		//<summary>Returns 2^0 + 2^1 + 2^2 + ... + 2^maxPower</summary>
+		public static long LongSumPowersOfTwoTo(int maxPower) => LongTwoToThe(maxPower + 1) - 1;
+
+		//<summary>Returns 3^0 + 3^1 + 3^2 + ... + 3^maxPower</summary>
+		public static int IntSumPowersOfThreeTo(int maxPower) => (IntThreeToThe(maxPower + 1) - 1)/2;
+		//<summary>Returns 2^0 + 2^1 + 2^2 + ... + 2^maxPower</summary>
+		public static int IntSumPowersOfTwoTo(int maxPower) => IntTwoToThe(maxPower + 1) - 1;
 
 		//a^b for 0 <= a <= 20 and 0 <= b <= 20
 		private static readonly long[][] _someLongPowers = {
@@ -186,6 +196,80 @@ namespace CollatzExperiments
 			return BigInteger.Pow(@base, exp);
 		}
 
+		//Based on https://stackoverflow.com/a/24274850/4149474
+		public static bool IsPowerOfThree(uint x) => x != 0 && 3486784401u          % x == 0;
+		//public static bool IsPowerOfThree(int x)   => x != 0 && 1162261467           % x == 0; //method below tested as slightly faster, but this may vary
+		public static bool IsPowerOfThree(ulong x) => x != 0 && 12157665459056928801 % x == 0;
+		public static bool IsPowerOfThree(long x) => x != 0 && 4052555153018976267  % x == 0;
+
+		//Based on https://stackoverflow.com/a/41582594/4149474
+		public static bool IsPowerOfThree(int x) => powersOfThreeHashlookupTable[(x ^ (x>>1) ^ (x>>2)) & 31] == x;
+		private static int[] powersOfThreeHashlookupTable = new[] {
+			1162261467, 1, 3, 729, 14348907, 1, 1, 1,
+			1, 1, 19683, 1, 2187, 81, 1594323, 9,
+			27, 43046721, 129140163, 1, 1, 531441, 243, 59049,
+			177147, 6561, 1, 4782969, 1, 1, 1, 387420489
+		};
+
+		//Based on https://stackoverflow.com/a/600306/4149474, then modified to avoid
+		//branching (untested whether this is faster)
+		public static bool IsPowerOfTwo(uint  x) => (x > 0) & ((x & (x - 1)) == 0);
+		public static bool IsPowerOfTwo(int   x) => (x > 0) & ((x & (x - 1)) == 0);
+		public static bool IsPowerOfTwo(ulong x) => (x > 0) & ((x & (x - 1)) == 0);
+		public static bool IsPowerOfTwo(long  x) => (x > 0) & ((x & (x - 1)) == 0);
+
+		//This is more complex than expected, and here it's easier to sum the sucessive powers of 3 and test that anyway
+		//	//TODO: Highest power of 3 less than x. There will only ever be one between sucessive powers of 2,
+		//	//so use that to do a lookup.
+		//	public static int HighestThreePowAtMost(int x) {
+		//		int index = FloorLog2(checked((uint)(x - 1)) + 1);
+		//		int inRange;
+		//		inRange = floorLog2ToPow3Table[]
+		//		//Then if its too big, have to move down an index, possibly twice
+		//	}
+		//	private static int[] floorLog2ToPow3Table = new[] {
+		//		1, 1, 3, 3, 9, 27, 27, 81, 243, 243, 729, 729, 2187, 6561, 6561, 19683, 59049, 59049,
+		//		177147, 177147, 531441, 1594323, 1594323, 4782969, 14348907, 14348907, 43046721,
+		//		129140163, 129140163, 387420489, 387420489, 1162261467, 1162261467,
+		//	};
+
+		//TODO: This may need to be made more efficient; it's could be used frequently
+		/// <summary>Finds the largest integer S = 3^0 + 3^1 + 3^2 ... 3^N less than <paramref name="x"/>,
+		/// and returns S via <paramref name="sum"/>, 3^N via <paramref name="highestPower"/>,
+		/// and N via <paramref name="highestExponent"/></summary>
+		//Note: In general if P = B^E, P is the power, B is the base, and E is the exponent
+		public static void HighestPow3SumAtMost(long x, out long sum, out long highestPower, out long highestExponent)
+		{
+			if (x <= 0) throw new ArgumentOutOfRangeException(nameof(x), x, "Must be positive.");
+
+			sum = 1;
+			highestExponent = 0;
+			highestPower = 1;
+
+			while (true)
+			{
+				if (sum == x) return;
+				else if (sum > x) {
+					//Backtrack
+					sum -= highestPower;
+					highestPower /= 3;
+					highestExponent--;
+					return;
+				}
+
+				highestExponent++;
+				highestPower *= 3;
+				sum += highestPower;
+			}
+		}
+
+		//https://stackoverflow.com/a/12175897/4149474
+		public static int NumberOfSetBits(int i)
+		{
+			i = i - ((i >> 1) & 0x55555555);
+			i = (i & 0x33333333) + ((i >> 2) & 0x33333333);
+			return (((i + (i >> 4)) & 0x0F0F0F0F) * 0x01010101) >> 24;
+		}
 	}
 }
 

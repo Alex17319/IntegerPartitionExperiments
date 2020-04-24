@@ -389,6 +389,21 @@ namespace Executor
 				}
 			}
 		}
+
+		public static void PrintTwoThreeExpansionRegister(int maxZ)
+		{
+			var expansionRegister = TwoThreeDecisionZFinder.GetExpansionRegister(max: maxZ);
+
+			for (int i = 0; i < expansionRegister.Length; i++)
+			{
+				Console.WriteLine(
+					i.ToString().PadLeft(8)
+					+ ":" +
+					//Convert.ToString(MathUtils.NumberOfSetBits(expansionRegister[i]), 10).PadLeft(0, '0')
+					Convert.ToString(expansionRegister[i], 2).PadLeft(32, '0')
+				);
+			}
+		}
 	}
 }
 
