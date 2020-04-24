@@ -1,0 +1,1 @@
+g++ two-three-decisions.cpp math-utils.h math-utils.cpp -lpthread
