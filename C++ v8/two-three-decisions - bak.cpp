@@ -59,7 +59,7 @@ void printUInt64Bits_cpu_reverse(uint64_t x) {
 	string b = bitset<64>(x).to_string('-', '#');
 	for (int i = 63; i >= 0; i--) {
 		cout << b[i];
-		//if (i > 0 && i % 8 == 0) cout << ":";
+		if (i > 0 && i % 8 == 0) cout << ":";
 	}
 }
 
@@ -283,7 +283,8 @@ void findAndPrintZeros(uint64_t startSize) {
 		// current chunk, correspond to values that are multiples of 3.
 		
 		for (int i = 0; i < expReg.size(); i++) {
-			#define currentCol (&(expReg[i])) //can't store a pointer as it'll be invalidated if the vector grows (in copyAlongByPowerOfThree)
+			struct expansionRegisterColumn *currentCol = &(expReg[i]);
+			
 			if (columnHasStarted(currentCol, i, curValue)) {
 				
 				uint64_t chunkContents = getCurrentChunkContents(currentCol);
@@ -297,7 +298,6 @@ void findAndPrintZeros(uint64_t startSize) {
 				
 				stepForwardChunk(currentCol);
 			}
-			#undef currentCol
 		}
 		
 		if (chunkAggregate != ~0) { // if there are any bits that haven't been set to one - i.e. a value that wasn't reachable
@@ -330,7 +330,8 @@ void printExpansionRegister(uint64_t startSize) {
 		vector<uint64_t> expansionRegPrint;
 		
 		for (int i = 0; i < expReg.size(); i++) {
-			#define currentCol (&(expReg[i])) //can't store a pointer as it'll be invalidated if the vector grows (in copyAlongByPowerOfThree)
+			struct expansionRegisterColumn *currentCol = &expReg[i];
+			
 			if (columnHasStarted(currentCol, i, curValue)) {
 				uint64_t chunkContents = getCurrentChunkContents(currentCol);
 				
@@ -345,7 +346,6 @@ void printExpansionRegister(uint64_t startSize) {
 			} else {
 				expansionRegPrint.push_back(0);
 			}
-			#undef currentCol
 		}
 		
 		for (int i = 0; i < CHUNK_BITS; i++) {
@@ -369,8 +369,10 @@ void printExpansionRegColumn(uint64_t startSize, int printColumn) {
 	initialiseExpRegFirstChunk(&expReg, startSize);
 	
 	for (uint64_t curValue = 0; true; curValue += CHUNK_BITS) {
+		
 		for (int i = 0; i < expReg.size(); i++) {
-			#define currentCol (&(expReg[i])) //can't store a pointer as it'll be invalidated if the vector grows (in copyAlongByPowerOfThree)
+			struct expansionRegisterColumn *currentCol = &(expReg[i]);
+			
 			if (columnHasStarted(currentCol, i, curValue)) {
 				uint64_t chunkContents = getCurrentChunkContents(currentCol);
 				
@@ -380,14 +382,13 @@ void printExpansionRegColumn(uint64_t startSize, int printColumn) {
 				}
 				
 				if (i == printColumn) {
+					cout << "\r";
 					printUInt64Bits_cpu_reverse(getCurrentChunkContents(currentCol));
-					//cout << " @ " << (curValue / CHUNK_BITS) << endl;
-					cout << endl;
+					cout << " @ " << (curValue / CHUNK_BITS) << endl;
 				}
 				
 				stepForwardChunk(&expReg[i]);
 			}
-			#undef currentCol
 		}
 	}
 }
@@ -413,6 +414,4 @@ int main(int argc, char *argv[]) {
 	cout << endl;
 	
 	findAndPrintZeros(startSize);
-	//printExpansionRegister(startSize);
-	//printExpansionRegColumn(startSize, 6);
 }

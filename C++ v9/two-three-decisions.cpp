@@ -282,10 +282,43 @@ void findAndPrintZeros(uint64_t startSize) {
 		// The shift moves it so that the ON bits are the bits which, in the
 		// current chunk, correspond to values that are multiples of 3.
 		
-		for (int i = 0; i < expReg.size(); i++) {
+		//i == 0:
+		if (curValue == 0) {
+			chunkAggregate |= 0b00000000'00000000'00000000'00000001'00000000'00000001'00000001'00010110;
+		} else if (isPowerOf2(curValue / CHUNK_BITS)) {
+			chunkAggregate |= 1;
+		}
+		
+		//i == 1:
+		{
+			uint64_t chunkContents = 0;
+			if (curValue / CHUNK_BITS == 0) { // full value when chunk number == 0
+				chunkContents = 0b00000001'00000000'00010001'01001001'00010000'01011001'01001101'10110000;
+			} else {
+				// when chunk number == 1
+				if (curValue / CHUNK_BITS == 1) {
+					chunkContents |= 0b00000000'00000000'00000000'00000000'00000000'00000001'00000000'00000000;
+				}
+				// whenever chunk number == 2^n for some non-negative integer n
+				if (isPowerOf2(curValue / CHUNK_BITS)) {
+					chunkContents |= 0b00000000'00000001'00000000'00000000'00000001'00000000'00010000'01001001;
+				}
+				// whenever chunk number == 2^n + 1 for some non-negative integer n
+				if (isPowerOf2(curValue / CHUNK_BITS - 1)) {
+					chunkContents |= 0b00000000'00000000'00000000'00000001'00000000'00000000'00000000'00000000;
+				}
+				// whenever chunk number == 2^n + 3*2^m where n >= m for some non-negative integers n and m
+				if (TODO) {
+					chunkContents |= 1;
+				}
+				
+			}
+			chunkAggregate |= chunkContents;
+		}
+		
+		for (int i = 2; i < expReg.size(); i++) {
 			#define currentCol (&(expReg[i])) //can't store a pointer as it'll be invalidated if the vector grows (in copyAlongByPowerOfThree)
 			if (columnHasStarted(currentCol, i, curValue)) {
-				
 				uint64_t chunkContents = getCurrentChunkContents(currentCol);
 				
 				if (chunkContents != 0) { // otherwise no need to do any copying

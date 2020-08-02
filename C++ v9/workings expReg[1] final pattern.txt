@@ -1,0 +1,26 @@
+----#---##------
+----#---#-###### -1
+----#---#------- &
+scrap this
+
+Case 1: exact power of 2 (easy).
+
+Case 2: something like -----#----##-----:
+
+----#---##------
+-----#---##----- >> 1
+---------#------ &
+then must have result != 0 && (result << 1) < (orig >> 1)
+
+if we had:
+----##---#------
+-----##---#----- >> 1
+-----#---------- &
+then result << 1:
+----#-----------
+orig >> 1:
+-----##---#-----
+so (result << 1) > (orig >> 1), so this fails (correctly).
+
+if we had:
+-----###
