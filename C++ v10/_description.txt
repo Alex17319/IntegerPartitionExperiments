@@ -1,0 +1,1 @@
+Here, the idea is to compute each column one at a time, using only the previous column. We also need to store an overall aggregate of all columns so far ORed together. This should overall reduce the storage needed, as previous columns are discarded.
