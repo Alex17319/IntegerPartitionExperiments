@@ -1,0 +1,1 @@
+This is like v10, but the idea is to omit all the multiples of 3 positions from the arrays, both to save storage slightly and to allow easier potential compression in a later version.

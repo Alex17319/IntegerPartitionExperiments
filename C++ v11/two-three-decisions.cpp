@@ -67,6 +67,7 @@ uint64_t initialiseColFirstChunk(uint64_t prevColFirstChunk, int newColPowerOf3)
 	// For each ON bit at some position j in the previous column's first chunk,
 	// turn the bit at j + 3^newColPowerOf3 ON in the new column's first chunk.
 	int shift = threeToThe(newColPowerOf3);
+	shift = shift / 3 * 2; // adjust for missing multiples of 3
 	for (int j = 1; (j + shift) < CHUNK_BITS; j++) {
 		if ((prevColFirstChunk & (1ULL << j)) != 0) {
 			newColFirstChunk |= (1ULL << (j + shift));
@@ -75,6 +76,7 @@ uint64_t initialiseColFirstChunk(uint64_t prevColFirstChunk, int newColPowerOf3)
 	
 	// Then for each ON bit at some position j in the new column's first chunk,
 	// turn the bit at 2*j ON in the same column's first chunk.
+	// TODO: Adjust for missing multiples of 3
 	for (int j = 1; j * 2 < CHUNK_BITS; j++) {
 		if ((newColFirstChunk & (1ULL << j)) != 0) {
 			newColFirstChunk |= (1ULL << (j * 2));
