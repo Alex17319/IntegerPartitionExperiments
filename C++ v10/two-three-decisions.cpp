@@ -42,7 +42,7 @@ void printUInt64Bits_memory(uint64_t x) {
 void printUInt64Bits_cpu(uint64_t x) {
 	string b = bitset<64>(x).to_string('-', '#');
 	for (int i = 0; i < 8; i++) {
-		if (i > 0) cout << ":";
+		//if (i > 0) cout << ":";
 		cout << b.substr(i * 8, 8);
 	}
 }
@@ -143,7 +143,7 @@ uint64_t estimateMemAvailable()
 
 void findAndPrintZeros() {
 	//uint64_t estimatedMem = estimateMemAvailable();
-	uint64_t estimatedMem = 10;
+	uint64_t estimatedMem = 100000000L;
 	
 	// Use 90% of the approx. available memory, rounded down to a multiple of 3
 	// as there's 3 equal length arrays in use at any time.
@@ -157,18 +157,21 @@ void findAndPrintZeros() {
 	uint64_t *colsAggregate = new uint64_t[colLength]();
 	
 	// zero the arrays
-	for (int i = 0; i < colLength; i++) {
+	for (uint64_t i = 0; i < colLength; i++) {
 		prevExpRegCol[i] = 0;
 		newExpRegCol[i] = 0;
 		colsAggregate[i] = 0;
 	}
 	
 	// First, run through the columns aggregate, setting every bit at a multiple of 3 to 1
-	for (int i = 0; i < colLength; i++) {
-		colsAggregate[i] = 0x9249249249249249 >> ((i * CHUNK_BITS) % 3);
+	for (uint64_t i = 0; i < colLength; i++) {
+		colsAggregate[i] = 0x9249249249249249 >> (i % 3);
 		// ^ Hex constant is 1001001...1001001
 		// The shift moves it so that the ON bits are the bits which
 		// correspond to values that are multiples of 3.
+		// i should really first be multiplied by CHUNK_BITS, but for
+		// large numbers that causes issues (compiler warned of underfined
+		// behaviour) and when taking mod 3 it doesn't make a difference
 	}
 	
 	// Set column 0's first chunk manually
@@ -176,9 +179,21 @@ void findAndPrintZeros() {
 	prevExpRegCol[0] = 0b00000000'00000000'00000000'00000001'00000000'00000001'00000001'00010110;
 	
 	// Setup the rest of column 0, i.e. ON at every power of 2:
-	for (int i = CHUNK_BITS; i < colLength; i *= 2) {
+	for (uint64_t i = 1; i < colLength; i *= 2) {
 		prevExpRegCol[i] = 1;
 	}
+	
+	// Overlay column 0 onto the aggregate
+	for (uint64_t i = 0; i < colLength; i++) {
+		colsAggregate[i] |= prevExpRegCol[i];
+	}
+	
+	//	cout << "aggregate\r\n";
+	//	for (int i = 0; i < colLength; i++) {
+	//		printUInt64Bits_cpu(colsAggregate[i]);
+	//		cout << "\r\n";
+	//	}
+	//	cout << "\r\n\r\n";
 	
 	// Fill in each next column, until doing so does nothing
 	for (int powOf3 = 1; ; powOf3++) {
@@ -186,26 +201,45 @@ void findAndPrintZeros() {
 		// If none were, we're done.
 		uint64_t anyBitsSet = 0;
 		
-		newExpRegCol[0] = initialiseColFirstChunk(prevExpRegCol[powOf3 - 1], powOf3);
+		newExpRegCol[0] = initialiseColFirstChunk(prevExpRegCol[0], powOf3);
 		
-		for (int chunk = 0; chunk < colLength; chunk++) {
-			colsAggregate[chunk] |= newExpRegCol[chunk];
-			anyBitsSet |= newExpRegCol[chunk];
-			
+		for (uint64_t chunk = 0; chunk < colLength; chunk++) {
 			copyAlongByPowerOfThree(prevExpRegCol, newExpRegCol, chunk, powOf3, colLength);
 			copyAlongToDoubleCurrentPos(newExpRegCol, chunk, colLength);
 			
-			//if (chunk % 5000 == 0) { // print progress every so often. Don't print too often or flush as either may slow things
-			//	cout << "\r" << "at: " << powOf3 << ", " << (chunk * 64);
-			//}
+			// The doubling-operation can't affect the current chunk (after the first chunk, which we've done),
+			// but the add-power-of-3 operation can (eg. when shifting by 9), so do these after (and double after).
+			anyBitsSet |= newExpRegCol[chunk];
+			colsAggregate[chunk] |= newExpRegCol[chunk];
+			
+			if (chunk % 50000 == 0) { // print progress every so often. Don't print too often or flush as either may slow things
+				cout << "\r" << "at: " << powOf3 << ", " << (chunk * 64);
+			}
 		}
 		
-		cout << "prevCol:\r\n";
-		for (int i = 0; i < colLength; i++) {
+		//	cout << "prevCol:\r\n";
+		//	for (int i = 0; i < colLength; i++) {
+		//		printUInt64Bits_cpu(prevExpRegCol[i]);
+		//		cout << "\r\n";
+		//	}
+		//	cout << "newCol:\r\n";
+		//	for (int i = 0; i < colLength; i++) {
+		//		printUInt64Bits_cpu(newExpRegCol[i]);
+		//		cout << "\r\n";
+		//	}
+		//	cout << "aggregate\r\n";
+		//	for (int i = 0; i < colLength; i++) {
+		//		printUInt64Bits_cpu(colsAggregate[i]);
+		//		cout << "\r\n";
+		//	}
+		//	cout << "\r\n\r\n";
+		
+		time_t time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+		cout << "\rFinished column for shift of 3^" << powOf3 << " @ " << ctime(&time_now); // ctime() adds a newline
+		for (uint64_t i = colLength - 500; i < colLength; i++) {
 			printUInt64Bits_cpu(prevExpRegCol[i]);
 			cout << "\r\n";
 		}
-		cout << "\r\n\r\n";
 		
 		if (!anyBitsSet) {
 			delete[] prevExpRegCol;
@@ -213,20 +247,26 @@ void findAndPrintZeros() {
 			break;
 		}
 		
-		delete[] prevExpRegCol;
+		// Move newExpRegCol to be used as prevExpRegCol,
+		// but reuse the old prev array by clearing it first,
+		// rather than deleting & reallocating.
+		uint64_t* tmp = prevExpRegCol;
 		prevExpRegCol = newExpRegCol;
-		newExpRegCol = new uint64_t[colLength]();
+		newExpRegCol = tmp;
+		for (int i = 0; i < colLength; i++) {
+			newExpRegCol[i] = 0;
+		}
 	}
 	
 	// Go through the columns aggregate, checking for any chunks with any zero bits
-	for (int chunk = 0; chunk < colLength; chunk++) {
+	for (uint64_t chunk = 0; chunk < colLength; chunk++) {
 		if (colsAggregate[chunk] != ~0) { // If any bits OFF
 			// Then find & print the position of the OFF bits
 			for (int i = 0; i < CHUNK_BITS; i++) {
 				if ((~colsAggregate[chunk]) & (1ULL << i)) {
 					time_t time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
 					
-					cout << "\r" << "found zero: " << (chunk + i) << " @ " << ctime(&time_now); // ctime() adds a newline
+					cout << "\r" << "found zero: " << (chunk * 64 + i) << "\r\n";
 				}
 			}
 		}

@@ -72,3 +72,7 @@ void spreadAndOrBits(uint64_t x, uint64_t *low, uint64_t *high) {
 	*low |= xLow;
 	*high |= xHigh;
 }
+
+void spreadAndOrBits_noMult3(uint64_t x, uint64_t *low, uint64_t *high, uint64_t posRepresented) {
+	
+}
