@@ -10,6 +10,7 @@ extern uint64_t threePowers[40];
 extern char floorLog2Lookup_64bit[64];
 
 void spreadAndOrBits(uint64_t x, uint64_t *low, uint64_t *high);
+void spreadAndOrBits_noMult3(uint64_t x, uint64_t *low, uint64_t *high);
 
 #define threeToThe(power) ( \
 	math_power_copy = (power), \

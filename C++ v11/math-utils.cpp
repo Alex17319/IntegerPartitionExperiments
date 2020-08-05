@@ -73,6 +73,27 @@ void spreadAndOrBits(uint64_t x, uint64_t *low, uint64_t *high) {
 	*high |= xHigh;
 }
 
-void spreadAndOrBits_noMult3(uint64_t x, uint64_t *low, uint64_t *high, uint64_t posRepresented) {
+void spreadAndOrBits_noMult3(uint64_t x, uint64_t *low, uint64_t *high) {
+	// Workings spreadsheet ("omit multiples of 3 workings 2.xlsx") shows that when omitting
+	// the multiples of 3, we still double the chunk position as usual, then in this method
+	// we just leave off the last step when spreading the bits (so they remain in pairs rather
+	// than fully spaced out), and then shift to the left by 1.
 	
+	uint64_t xLow = x & 0x00000000FFFFFFFF;
+	uint64_t xHigh = (x & 0xFFFFFFFF00000000) >> 32;
+	
+	xLow = (xLow | (xLow << 16)) & 0x0000FFFF0000FFFF; //16 0's, 16 1's, 16 0's, 16 1's
+	xLow = (xLow | (xLow << 8 )) & 0x00FF00FF00FF00FF; //8 0's, 8 1's, 8 0's, ...
+	xLow = (xLow | (xLow << 4 )) & 0x0F0F0F0F0F0F0F0F; //00001111...
+	xLow = (xLow | (xLow << 2 )) & 0x3333333333333333; //00110011...
+	xLow = xLow << 1;
+	
+	xHigh = (xHigh | (xHigh << 16)) & 0x0000FFFF0000FFFF;
+	xHigh = (xHigh | (xHigh << 8 )) & 0x00FF00FF00FF00FF;
+	xHigh = (xHigh | (xHigh << 4 )) & 0x0F0F0F0F0F0F0F0F;
+	xHigh = (xHigh | (xHigh << 2 )) & 0x3333333333333333;
+	xHigh = xHigh << 1;
+	
+	*low |= xLow;
+	*high |= xHigh;
 }

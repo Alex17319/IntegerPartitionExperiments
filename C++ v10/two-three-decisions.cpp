@@ -229,10 +229,10 @@ void findAndPrintZeros() {
 		
 		time_t time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
 		cout << "\rFinished column for shift of 3^" << powOf3 << " @ " << ctime(&time_now); // ctime() adds a newline
-		for (uint64_t i = colLength - 500; i < colLength; i++) {
-			printUInt64Bits_cpu(prevExpRegCol[i]);
-			cout << "\r\n";
-		}
+		//	for (uint64_t i = colLength - 500; i < colLength; i++) {
+		//		printUInt64Bits_cpu(prevExpRegCol[i]);
+		//		cout << "\r\n";
+		//	}
 		
 		if (!anyBitsSet) {
 			delete[] prevExpRegCol;
