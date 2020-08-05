@@ -9,11 +9,11 @@
 #include <cstring>
 #include <iomanip>
 #include <iostream>
+#include <new>
+#include <stdint.h>
 #include <string>
 #include <thread>
 #include <vector>
-#include <stdint.h>
-#include <new>
 
 using namespace std;
 
@@ -97,30 +97,16 @@ uint64_t initialiseColFirstChunk(uint64_t prevColFirstChunk, int newColPowerOf3)
 		int doubleN = n * 2; // number to mark as ON
 		int doubleNBit = numToBitPos(doubleN); // position of bit representing that number
 		
-		//	cout << "j: " << j << ", n: " << n << ", doubleN: " << doubleN << ", doubleNBit: " << doubleNBit << ", " << ((newColFirstChunk & (1ULL << j)) != 0) << "." << endl;
 		if (doubleNBit >= CHUNK_BITS) break;
 		
 		if ((newColFirstChunk & (1ULL << j)) != 0) {
 			newColFirstChunk |= (1ULL << doubleNBit);
 		}
 	}
-	//	for (int j = 0, n = 1; true; j++, n++) {
-	//		if (n % 3 == 0) n++; // skip multiples of 3 for n, but not for j
-	//		
-	//		int doubleN = n * 2; // number to mark as ON
-	//		int doubleNBit = numToBitPos(doubleN); // position of bit representing that number
-	//		
-	//		if (doubleNBit >= CHUNK_BITS) break;
-	//		
-	//		if ((newColFirstChunk & (1ULL << j)) != 0) {
-	//			newColFirstChunk |= (1ULL << doubleNBit);
-	//		}
-	//	}
 	
 	return newColFirstChunk;
 }
 
-// void copyAlongByPowerOfThree(vector<struct expansionRegisterColumn> *expReg, int colNum, uint64_t chunkContents, uint64_t startSize) {
 void copyAlongByPowerOfThree(uint64_t* prevExpRegCol, uint64_t* newExpRegCol, uint64_t sourceChunkNum, uint64_t computedPowOf3, uint64_t colLength) {
 	uint64_t shift = computedPowOf3 / 3 * 2; // adjust for missing multiples of 3
 	uint64_t offset = shift % CHUNK_BITS;
@@ -170,15 +156,6 @@ uint64_t estimateMemAvailable()
 	}
 }
 
-//	void aggregateAndPrint(int powOf3, uint64_t chunkNum, uint64_t* newExpRegCol, uint64_t* colsAggregate, uint64_t* anyBitsSet) {
-//		*anyBitsSet |= newExpRegCol[chunkNum];
-//		colsAggregate[chunkNum] |= newExpRegCol[chunkNum];
-//		
-//		if (chunkNum % 50000 == 0) { // print progress every so often. Don't print too often or flush as either may slow things
-//			cout << "\r" << "at: " << powOf3 << ", " << (chunkNum * 64);
-//		}
-//	}
-
 void findAndPrintZeros() {
 	//uint64_t estimatedMem = estimateMemAvailable();
 	uint64_t estimatedMem = 200000000L;
@@ -201,22 +178,6 @@ void findAndPrintZeros() {
 		newExpRegCol[i] = 0;
 		colsAggregate[i] = 0;
 	}
-	
-	//	// First, run through the columns aggregate, setting every bit at a multiple of 3 to 1
-	//	for (uint64_t i = 0; i < colLength; i++) {
-	//		colsAggregate[i] = 0x9249249249249249 >> (i % 3);
-	//		// ^ Hex constant is 1001001...1001001
-	//		// The shift moves it so that the ON bits are the bits which
-	//		// correspond to values that are multiples of 3.
-	//		// i should really first be multiplied by CHUNK_BITS, but for
-	//		// large numbers that causes issues (compiler warned of underfined
-	//		// behaviour) and when taking mod 3 it doesn't make a difference
-	//	}
-	
-	// Set column 0's first chunk manually
-	// Then for all the next columns, we can use initialiseColFirstChunk()
-	// prevExpRegCol[0] = 0b00000000'00000000'00000000'00000001'00000000'00000001'00000001'00010110;
-	// prevExpRegCol[0] = 0b00000000'00000000'00000100'00000000'00000000'00100000'00000100'00100111;
 	
 	// Setup column 0, i.e. ON at every power of 2, adjusted for missing multiples of 3:
 	for (uint64_t i = 1; i < colLength * CHUNK_BITS; i *= 2) {
@@ -272,41 +233,20 @@ void findAndPrintZeros() {
 		for (; chunk < colLength; chunk++) {
 			copyAlongByPowerOfThree(prevExpRegCol, newExpRegCol, chunk, computedPow, colLength);
 			copyAlongToDoubleCurrentPos(newExpRegCol, chunk, colLength);
-			//aggregateAndPrint(powOf3, chunk, newExpRegCol, colsAggregate, &anyBitsSet);
 			aggregateAndPrint();
 		}
 		
 		for (; chunk <= lastChunkToDouble; chunk++) {
 			copyAlongToDoubleCurrentPos(newExpRegCol, chunk, colLength);
-			//aggregateAndPrint(powOf3, chunk, newExpRegCol, colsAggregate, &anyBitsSet);
 			aggregateAndPrint();
 		}
 		
-		//	cout << endl << "lastChunkToShift: " << lastChunkToShift << ", lastChunkToDouble: " << lastChunkToDouble << ", firstLimit: " << firstLimit << ", colLength: " << colLength << ", chunk: " << chunk << endl;
-		
 		for (; chunk <= lastChunkToShift; chunk++) {
 			copyAlongByPowerOfThree(prevExpRegCol, newExpRegCol, chunk, computedPow, colLength);
-			//aggregateAndPrint(powOf3, chunk, newExpRegCol, colsAggregate, &anyBitsSet);
 			aggregateAndPrint();
 		}
 		
 		#undef aggregateAndPrint
-		
-		//	for (uint64_t chunk = 0; chunk < colLength; chunk++) {
-		//		if (chunk + (computedPow / 3 * 2) / 64 < colLength) //+10 to be safe (TODO: Improve)
-		//			copyAlongByPowerOfThree(prevExpRegCol, newExpRegCol, chunk, computedPow, colLength);
-		//		if (chunk * 2 < colLength)
-		//			copyAlongToDoubleCurrentPos(newExpRegCol, chunk, colLength);
-		//		
-		//		// The doubling-operation can't affect the current chunk (after the first chunk, which we've done),
-		//		// but the add-power-of-3 operation can (eg. when shifting by 9), so do these after (and double after).
-		//		anyBitsSet |= newExpRegCol[chunk];
-		//		colsAggregate[chunk] |= newExpRegCol[chunk];
-		//		
-		//		if (chunk % 50000 == 0) { // print progress every so often. Don't print too often or flush as either may slow things
-		//			cout << "\r" << "at: " << powOf3 << ", " << (chunk * 64);
-		//		}
-		//	}
 		
 		//	cout << "prevCol:\r\n";
 		//	for (int i = 0; i < colLength; i++) {
@@ -375,26 +315,10 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 	
-	//	uint64_t a = 0;
-	//	uint64_t b = 0;
-	//	uint64_t c = 0b11111111;
-	//	
-	//	printUInt64Bits_cpu(spreadAndOrBits
-	
-	//	printUInt64Bits_cpu(initialiseColFirstChunk(0b00000000'00000000'00000100'00000000'00000000'00100000'00000100'00100111, 1));
-	//	cout << endl;
-	//	return 0;
-	
-	//if (argc < 2) return -1;
-	
-	//uint64_t startSize = strtoull(argv[1], nullptr, 10);
-	
 	auto start = chrono::system_clock::now();
 	time_t start_time = chrono::system_clock::to_time_t(start);
 	cout << "Started at: " << ctime(&start_time); // ctime() adds a newline
 	cout << endl;
 	
 	findAndPrintZeros();
-	//printExpansionRegister(startSize);
-	//printExpansionRegColumn(startSize, 6);
 }
