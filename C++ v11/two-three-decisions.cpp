@@ -7,6 +7,7 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <fstream>
 #include <iomanip>
 #include <iostream>
 #include <new>
@@ -158,7 +159,8 @@ uint64_t estimateMemAvailable()
 
 void findAndPrintZeros() {
 	//uint64_t estimatedMem = estimateMemAvailable();
-	uint64_t estimatedMem = 200000000L;
+	//uint64_t estimatedMem = 200000000L;
+	uint64_t estimatedMem = 100000L;
 	
 	// Use 90% of the approx. available memory, rounded down to a multiple of 3
 	// as there's 3 equal length arrays in use at any time.
@@ -264,6 +266,17 @@ void findAndPrintZeros() {
 		//		cout << "\r\n";
 		//	}
 		//	cout << "\r\n\r\n";
+		
+		//	if (powOf3 == 7) {
+		//		ofstream outputfile;
+		//		outputfile.open("tmp-output.txt");
+		//		//Binary:
+		//		outputfile.write((char*)(void*)(newExpRegCol), colLength * sizeof(uint64_t));
+		//		//Human-readable:
+		//		//for (int i = 0; i < colLength; i++) {
+		//		//	outputfile << bitset<64>(newExpRegCol[i]).to_string('-', '#') << endl;
+		//		//}
+		//	}
 		
 		time_t time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
 		cout << "\rFinished column for shift of 3^" << powOf3 << " @ " << ctime(&time_now); // ctime() adds a newline
