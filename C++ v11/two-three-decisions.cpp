@@ -159,8 +159,9 @@ uint64_t estimateMemAvailable()
 
 void findAndPrintZeros() {
 	//uint64_t estimatedMem = estimateMemAvailable();
-	//uint64_t estimatedMem = 200000000L;
 	uint64_t estimatedMem = 100000L;
+	//uint64_t estimatedMem = 200000000L;
+	//uint64_t estimatedMem = 80000000000L;
 	
 	// Use 90% of the approx. available memory, rounded down to a multiple of 3
 	// as there's 3 equal length arrays in use at any time.
@@ -170,9 +171,17 @@ void findAndPrintZeros() {
 	uint64_t colLength = memToUse / 3;
 	//uint64_t colLength = 1;
 	
+	cout << "Estimated memory = " << estimatedMem << " uint64_t's\r\n";
+	cout << "Col length = " << colLength << "\r\n";
+	cout << "Max value = " << (colLength * 64) << "\r\n";
+	cout << "\r\n";
+	
 	uint64_t *prevExpRegCol = new uint64_t[colLength]();
 	uint64_t *newExpRegCol  = new uint64_t[colLength]();
 	uint64_t *colsAggregate = new uint64_t[colLength]();
+	
+	time_t time_alloc = chrono::system_clock::to_time_t(chrono::system_clock::now());
+	cout << "Allocated @ " << ctime(&time_alloc); // ctime() adds a newline
 	
 	// zero the arrays
 	for (uint64_t i = 0; i < colLength; i++) {
@@ -191,6 +200,9 @@ void findAndPrintZeros() {
 	for (uint64_t i = 0; i < colLength; i++) {
 		colsAggregate[i] |= prevExpRegCol[i];
 	}
+	
+	time_t time_setupdone = chrono::system_clock::to_time_t(chrono::system_clock::now());
+	cout << "Finished setup @ " << ctime(&time_setupdone); // ctime() adds a newline
 	
 	//	cout << "aggregate\r\n";
 	//	for (int i = 0; i < colLength; i++) {
@@ -221,12 +233,13 @@ void findAndPrintZeros() {
 		// which we've done), but the add-power-of-3 operation can (eg. when shifting by 9),
 		// so we must only double & aggregate after that.
 		// Note: Don't print progress too often, or flush, as either may slow things
-		// Chose a power of 2 as the interval to possibly be nice to the branch predictor etc.
+		// Chose a power of 2 as the interval to possibly be nice to the branch
+		// predictor etc, also being able to do '&' instead of '%' is neat.
 		
 		#define aggregateAndPrint() { \
 			anyBitsSet |= newExpRegCol[chunk]; \
 			colsAggregate[chunk] |= newExpRegCol[chunk]; \
-			if (chunk % 65536 == 0) { \
+			if ((chunk & 0xFFFF) == 0) { \
 				cout << "\r" << "at: " << powOf3 << ", " << (chunk * 64); \
 			} \
 		}
@@ -267,16 +280,20 @@ void findAndPrintZeros() {
 		//	}
 		//	cout << "\r\n\r\n";
 		
-		//	if (powOf3 == 7) {
-		//		ofstream outputfile;
-		//		outputfile.open("tmp-output.txt");
-		//		//Binary:
-		//		outputfile.write((char*)(void*)(newExpRegCol), colLength * sizeof(uint64_t));
-		//		//Human-readable:
-		//		//for (int i = 0; i < colLength; i++) {
-		//		//	outputfile << bitset<64>(newExpRegCol[i]).to_string('-', '#') << endl;
-		//		//}
-		//	}
+		if (powOf3 == 7) {
+			ofstream outputfile;
+			outputfile.open("tmp-output.txt");
+			//Binary:
+			//outputfile.write((char*)(void*)(newExpRegCol), colLength * sizeof(uint64_t));
+			//Human-readable:
+			for (uint64_t i = 0; i < colLength; i++) {
+				string str = bitset<64>(newExpRegCol[i]).to_string('-', '#');
+				for (int bit = 63; bit >= 0; bit--) {
+					outputfile << str[bit];
+				}
+				outputfile << endl;
+			}
+		}
 		
 		time_t time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
 		cout << "\rFinished column for shift of 3^" << powOf3 << " @ " << ctime(&time_now); // ctime() adds a newline
@@ -297,9 +314,12 @@ void findAndPrintZeros() {
 		uint64_t* tmp = prevExpRegCol;
 		prevExpRegCol = newExpRegCol;
 		newExpRegCol = tmp;
-		for (int i = 0; i < colLength; i++) {
+		for (uint64_t i = 0; i < colLength; i++) {
 			newExpRegCol[i] = 0;
 		}
+		
+		time_t time_movenext = chrono::system_clock::to_time_t(chrono::system_clock::now());
+		cout << "Beginning next column @ " << ctime(&time_movenext); // ctime() adds a newline
 	}
 	
 	// Go through the columns aggregate, checking for any chunks with any zero bits
@@ -334,4 +354,8 @@ int main(int argc, char *argv[]) {
 	cout << endl;
 	
 	findAndPrintZeros();
+	
+	cout << endl;
+	time_t finish_time = chrono::system_clock::to_time_t(chrono::system_clock::now());
+	cout << "Finished at: " << ctime(&finish_time); // ctime() adds a newline
 }

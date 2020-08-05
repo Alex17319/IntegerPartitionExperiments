@@ -1,0 +1,23 @@
+either the width, or the spacing between lines
+IMPORTANT: the data has multiples of 3 omitted, but these numbers ignore that
+(very incomplete)
+
+2
+128
+256
+144
+36
+9
+48
+20
+18
+8
+12
+32
+4
+216
+16
+208
+200
+198
+192
