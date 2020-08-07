@@ -1,0 +1,1 @@
+Here, we omit the multiples of 3 the same as v11, but aim to only store a single column at a time rather than two. This also means we effectively do the clear-prev-column step at the same time as filling the new one. Still need the aggregate column as well though
