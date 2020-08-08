@@ -117,6 +117,7 @@ void copyAlongByPowerOfThree(uint64_t* prevExpRegCol, uint64_t* newExpRegCol, ui
 	
 	if (destChunk1Num < colLength) newExpRegCol[destChunk1Num] |= prevExpRegCol[sourceChunkNum] << offset;
 	if (destChunk2Num < colLength) newExpRegCol[destChunk2Num] |= prevExpRegCol[sourceChunkNum] >> (CHUNK_BITS - offset);
+	// ^ POTENTIAL BUG: What if offset == 0, so CHUNK_BITS - offset == 64 ??
 }
 
 void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, uint64_t colLength) {
@@ -159,8 +160,8 @@ uint64_t estimateMemAvailable()
 
 void findAndPrintZeros() {
 	//uint64_t estimatedMem = estimateMemAvailable();
-	uint64_t estimatedMem = 100000L;
-	//uint64_t estimatedMem = 200000000L;
+	//uint64_t estimatedMem = 100000L; // for taking sample output
+	uint64_t estimatedMem = 400000000L;
 	//uint64_t estimatedMem = 80000000000L;
 	
 	// Use 90% of the approx. available memory, rounded down to a multiple of 3
@@ -245,9 +246,14 @@ void findAndPrintZeros() {
 		}
 		
 		uint64_t chunk = 0;
-		for (; chunk < colLength; chunk++) {
+		for (; chunk <= firstLimit; chunk++) {
 			copyAlongByPowerOfThree(prevExpRegCol, newExpRegCol, chunk, computedPow, colLength);
 			copyAlongToDoubleCurrentPos(newExpRegCol, chunk, colLength);
+			aggregateAndPrint();
+		}
+		
+		for (; chunk <= lastChunkToShift; chunk++) {
+			copyAlongByPowerOfThree(prevExpRegCol, newExpRegCol, chunk, computedPow, colLength);
 			aggregateAndPrint();
 		}
 		
@@ -256,8 +262,7 @@ void findAndPrintZeros() {
 			aggregateAndPrint();
 		}
 		
-		for (; chunk <= lastChunkToShift; chunk++) {
-			copyAlongByPowerOfThree(prevExpRegCol, newExpRegCol, chunk, computedPow, colLength);
+		for (; chunk <= colLength; chunk++) {
 			aggregateAndPrint();
 		}
 		
@@ -280,20 +285,20 @@ void findAndPrintZeros() {
 		//	}
 		//	cout << "\r\n\r\n";
 		
-		if (powOf3 == 7) {
-			ofstream outputfile;
-			outputfile.open("tmp-output.txt");
-			//Binary:
-			//outputfile.write((char*)(void*)(newExpRegCol), colLength * sizeof(uint64_t));
-			//Human-readable:
-			for (uint64_t i = 0; i < colLength; i++) {
-				string str = bitset<64>(newExpRegCol[i]).to_string('-', '#');
-				for (int bit = 63; bit >= 0; bit--) {
-					outputfile << str[bit];
-				}
-				outputfile << endl;
-			}
-		}
+		//	if (powOf3 == 7) {
+		//		ofstream outputfile;
+		//		outputfile.open("tmp-output.txt");
+		//		//Binary:
+		//		//outputfile.write((char*)(void*)(newExpRegCol), colLength * sizeof(uint64_t));
+		//		//Human-readable:
+		//		for (uint64_t i = 0; i < colLength; i++) {
+		//			string str = bitset<64>(newExpRegCol[i]).to_string('-', '#');
+		//			for (int bit = 63; bit >= 0; bit--) {
+		//				outputfile << str[bit];
+		//			}
+		//			outputfile << endl;
+		//		}
+		//	}
 		
 		time_t time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
 		cout << "\rFinished column for shift of 3^" << powOf3 << " @ " << ctime(&time_now); // ctime() adds a newline
