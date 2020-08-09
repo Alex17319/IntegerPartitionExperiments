@@ -164,7 +164,7 @@ uint64_t estimateMemAvailable()
 
 void findAndPrintZeros() {
 	//uint64_t estimatedMem = estimateMemAvailable();
-	uint64_t estimatedMem = 1000000000L;
+	uint64_t estimatedMem = 400000000L;
 	//uint64_t estimatedMem = 200000000L;
 	//uint64_t estimatedMem = 80000000000L;
 	
@@ -211,43 +211,15 @@ void findAndPrintZeros() {
 	time_t time_setupdone = chrono::system_clock::to_time_t(chrono::system_clock::now());
 	cout << "Finished setup @ " << ctime(&time_setupdone); // ctime() adds a newline
 	
-	//	cout << "col:\r\n";
-	//	for (int i = 0; i < colLength; i++) {
-	//		printUInt64Bits_cpu(expRegCol[i]);
-	//		cout << "\r\n";
-	//	}
-	//	cout << "aggregate\r\n";
-	//	for (int i = 0; i < colLength; i++) {
-	//		printUInt64Bits_cpu(colsAggregate[i]);
-	//		cout << "\r\n";
-	//	}
-	//	cout << "\r\n\r\n";
-	
 	// Fill in each next column, until doing so does nothing
 	uint64_t firstBitValueRepresented = 1;
 	for (int powOf3 = 1; true; powOf3++) {
-		uint64_t computedPow = threeToThe(powOf3);
-		
-		//uint64_t shiftAmount = computedPow / 3 * 2;
-		
-		firstBitValueRepresented += computedPow;
+		firstBitValueRepresented += threeToThe(powOf3);
+		uint64_t nextRoundFirstBitValueRepresented = firstBitValueRepresented + threeToThe(powOf3 + 1);
 		
 		if (firstBitValueRepresented > maxValueRepresentable) break;
 		
 		initialiseColFirstChunk(expRegCol, firstBitValueRepresented);
-		
-		//	cout << "computedPow: " << computedPow << ", firstBitValueRepresented: " << firstBitValueRepresented << endl;
-		//	cout << "[after first chunk init] col:\r\n";
-		//	for (int i = 0; i < colLength; i++) {
-		//		printUInt64Bits_cpu(expRegCol[i]);
-		//		cout << "\r\n";
-		//	}
-		//	cout << "aggregate\r\n";
-		//	for (int i = 0; i < colLength; i++) {
-		//		printUInt64Bits_cpu(colsAggregate[i]);
-		//		cout << "\r\n";
-		//	}
-		//	cout << "\r\n\r\n";
 		
 		// Note: Don't print progress too often, or flush, as either may slow things
 		// Chose a power of 2 as the interval to possibly be nice to the branch
@@ -263,7 +235,6 @@ void findAndPrintZeros() {
 			bool copied = copyAlongToDoubleCurrentPos(expRegCol, chunk, firstBitValueRepresented, colLength);
 			if (!copied) break;
 			
-			//if (bitPosToNum((chunk + 1) * CHUNK_BITS - 1) - 1 + firstBitValueRepresented >= maxValueRepresentable) break;
 			if (chunk > lastChunkSettable) break;
 			
 			uint64_t adjustment = numToBitPos(firstBitValueRepresented);
@@ -272,6 +243,11 @@ void findAndPrintZeros() {
 			
 			colsAggregate[chunk + chunksAdjustment] |= expRegCol[chunk] << bitsAdjustment;
 			colsAggregate[chunk + chunksAdjustment + 1] |= (bitsAdjustment > 0) * (expRegCol[chunk] >> (CHUNK_BITS - bitsAdjustment));
+			//if (chunk < 
+			
+			if ((chunk & 0xFFFF) == 0) { \
+				cout << "\r" << "at: " << powOf3 << ", " << (chunk * 64); \
+			}
 		}
 		
 		for (; chunk <= lastChunkSettable; chunk++) {
@@ -281,39 +257,11 @@ void findAndPrintZeros() {
 			
 			colsAggregate[chunk + chunksAdjustment] |= expRegCol[chunk] << bitsAdjustment;
 			colsAggregate[chunk + chunksAdjustment + 1] |= (bitsAdjustment > 0) * (expRegCol[chunk] >> (CHUNK_BITS - bitsAdjustment));
+			
+			if ((chunk & 0xFFFF) == 0) { \
+				cout << "\r" << "at: " << powOf3 << ", " << (chunk * 64); \
+			}
 		}
-		
-		
-		//	#define aggregateAndPrint() { \
-		//		anyBitsSet |= newExpRegCol[chunk]; \
-		//		colsAggregate[chunk] |= newExpRegCol[chunk]; \
-		//		if ((chunk & 0xFFFF) == 0) { \
-		//			cout << "\r" << "at: " << powOf3 << ", " << (chunk * 64); \
-		//		} \
-		//	}
-		//	
-		//	uint64_t chunk = 0;
-		//	for (; chunk <= firstLimit; chunk++) {
-		//		copyAlongByPowerOfThree(prevExpRegCol, newExpRegCol, chunk, computedPow, colLength);
-		//		copyAlongToDoubleCurrentPos(newExpRegCol, chunk, colLength);
-		//		aggregateAndPrint();
-		//	}
-		//	
-		//	for (; chunk <= lastChunkToShift; chunk++) {
-		//		copyAlongByPowerOfThree(prevExpRegCol, newExpRegCol, chunk, computedPow, colLength);
-		//		aggregateAndPrint();
-		//	}
-		//	
-		//	for (; chunk <= lastChunkToDouble; chunk++) {
-		//		copyAlongToDoubleCurrentPos(newExpRegCol, chunk, colLength);
-		//		aggregateAndPrint();
-		//	}
-		//	
-		//	for (; chunk <= colLength; chunk++) {
-		//		aggregateAndPrint();
-		//	}
-		//	
-		//	#undef aggregateAndPrint
 		
 		//	cout << "col:\r\n";
 		//	for (int i = 0; i < colLength; i++) {
@@ -347,22 +295,6 @@ void findAndPrintZeros() {
 		//	for (uint64_t i = colLength - 500; i < colLength; i++) {
 		//		printUInt64Bits_cpu(prevExpRegCol[i]);
 		//		cout << "\r\n";
-		//	}
-		
-		//	if (!anyBitsSet) {
-		//		delete[] prevExpRegCol;
-		//		delete[] newExpRegCol;
-		//		break;
-		//	}
-		//	
-		//	// Move newExpRegCol to be used as prevExpRegCol,
-		//	// but reuse the old prev array by clearing it first,
-		//	// rather than deleting & reallocating.
-		//	uint64_t* tmp = prevExpRegCol;
-		//	prevExpRegCol = newExpRegCol;
-		//	newExpRegCol = tmp;
-		//	for (uint64_t i = 0; i < colLength; i++) {
-		//		newExpRegCol[i] = 0;
 		//	}
 		
 		time_t time_movenext = chrono::system_clock::to_time_t(chrono::system_clock::now());
