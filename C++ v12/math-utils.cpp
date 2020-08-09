@@ -97,3 +97,26 @@ void spreadAndOrBits_noMult3(uint64_t x, uint64_t *low, uint64_t *high) {
 	*low |= xLow;
 	*high |= xHigh;
 }
+
+// transforms something like:
+// 11111111 to:
+// 11001100 11001100
+// bits in *low and *high are overwritten, not ORed or anything
+// TODO: Use this, with shifts before and after, to perform the doubling operations
+void spreadBitsPaired(uint64_t x, uint64_t *low, uint64_t *high) {
+	uint64_t xLow = x & 0x00000000FFFFFFFF;
+	uint64_t xHigh = (x & 0xFFFFFFFF00000000) >> 32;
+	
+	xLow = (xLow | (xLow << 16)) & 0x0000FFFF0000FFFF; //16 0's, 16 1's, 16 0's, 16 1's
+	xLow = (xLow | (xLow << 8 )) & 0x00FF00FF00FF00FF; //8 0's, 8 1's, 8 0's, ...
+	xLow = (xLow | (xLow << 4 )) & 0x0F0F0F0F0F0F0F0F; //00001111...
+	xLow = (xLow | (xLow << 2 )) & 0x3333333333333333; //00110011...
+	
+	xHigh = (xHigh | (xHigh << 16)) & 0x0000FFFF0000FFFF;
+	xHigh = (xHigh | (xHigh << 8 )) & 0x00FF00FF00FF00FF;
+	xHigh = (xHigh | (xHigh << 4 )) & 0x0F0F0F0F0F0F0F0F;
+	xHigh = (xHigh | (xHigh << 2 )) & 0x3333333333333333;
+	
+	*low = xLow;
+	*high = xHigh;
+}
