@@ -268,6 +268,19 @@ void findAndPrintZeros() {
 			colsAggregate[chunk + chunksAdjustment] |= expRegCol[chunk] << bitsAdjustment;
 			colsAggregate[chunk + chunksAdjustment + 1] |= (bitsAdjustment > 0) * (expRegCol[chunk] >> (CHUNK_BITS - bitsAdjustment));
 			
+			if (chunk + chunksAdjustment > 0 && chunk + chunksAdjustment < (nextRoundAdjustment / CHUNK_BITS)) {
+				if (~colsAggregate[chunk + chunksAdjustment] != 0) { // If any bits OFF
+					// Then find & print the position of the OFF bits
+					for (uint64_t i = 0; i < CHUNK_BITS; i++) {
+						if ((~colsAggregate[chunk + chunksAdjustment]) & (1ULL << i)) {
+							time_t time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+							
+							cout << "\r" << "found zero: " << bitPosToNum((chunk + chunksAdjustment) * 64 + i) << "\r\n";
+						}
+					}
+				}
+			}
+			
 			if ((chunk & 0xFFFF) == 0) { \
 				cout << "\r" << "at: " << powOf3 << ", " << (chunk * 64); \
 			}
