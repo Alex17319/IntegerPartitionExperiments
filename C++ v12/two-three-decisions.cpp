@@ -171,13 +171,19 @@ uint64_t estimateMemAvailable()
 	}
 }
 
-void printZeroBits(uint64_t* aggChunks, uint64_t aggChunksPos) {
-	
+void printZeros(uint64_t chunk, uint64_t printOffset) {
+	// Find & print the position of the OFF bits, offset by printOffset
+	for (uint64_t i = 0; i < CHUNK_BITS; i++) {
+		if ((~chunk) & (1ULL << i)) {
+			printTime();
+			cout << ": found zero: " << bitPosToNum(printOffset + i) << endl;
+		}
+	}
 }
 
 void findAndPrintZeros() {
 	//uint64_t estimatedMem = estimateMemAvailable();
-	uint64_t estimatedMem = 20000000L;
+	uint64_t estimatedMem = 200000000L;
 	//uint64_t estimatedMem = 200000000L;
 	//uint64_t estimatedMem = 80000000000L;
 	
@@ -201,9 +207,8 @@ void findAndPrintZeros() {
 	uint64_t *expRegCol = new uint64_t[colLength]();
 	uint64_t *colsAggregate = new uint64_t[colLength]();
 	
-	cout << "Allocated @ ";
 	printTime();
-	cout << endl;
+	cout << ": allocated" << endl;
 	
 	// zero the arrays
 	for (uint64_t i = 0; i < colLength; i++) {
@@ -222,9 +227,8 @@ void findAndPrintZeros() {
 		colsAggregate[i] |= expRegCol[i];
 	}
 	
-	cout << "Finished setup @ ";
 	printTime();
-	cout << endl;
+	cout << ": finished setup" << endl << endl;
 	
 	uint64_t firstBitValueRepresented = 1;
 	for (int powOf3 = 1; true; powOf3++) {
@@ -257,13 +261,8 @@ void findAndPrintZeros() {
 		// Tests if any bits are OFF. If so, then finds them & print the numbers they represent
 		#define checkForZeros() { \
 			if (~aggChunks[0] != 0) { \
-				for (uint64_t i = 0; i < CHUNK_BITS; i++) { \
-					if ((~aggChunks[0]) & (1ULL << i)) { \
-						cout << "\r"; \
-						printTime(); \
-						cout << ": found zero: " << bitPosToNum(aggChunksPos * 64 + i) << endl; \
-					} \
-				} \
+				cout << "\r"; \
+				printZeros(aggChunks[0], aggChunksPos * 64); \
 			} \
 		}
 		
@@ -288,7 +287,7 @@ void findAndPrintZeros() {
 		// Now we're either done doubling, or done checking for zeros
 		
 		// If we're done doubling, continue along until we'e done checking for zeros
-		// Note that lastChunkToCheckZeros <= lastChunkToAggregate so aggregate() is always necessary
+		// Note that lastChunkToCheckZeros <= lastChunkToAggregate so aggregate() is always necessary (& won't segfault)
 		for (; chunk < lastChunkToCheckZeros; chunk++) {
 			aggregate();
 			checkForZeros();
@@ -312,61 +311,15 @@ void findAndPrintZeros() {
 			printProgress();
 		}
 		
-		// Otherwise, continue along with the rest of the aggregating
+		// Otherwise, if we're done doubling, continue along with the rest of the aggregating
 		for (; chunk < lastChunkToAggregate; chunk++) {
 			aggregate();
 			printProgress();
 		}
 		
-		//	uint64_t chunk = 0;
-		//	for (; chunk < colLength; chunk++) {
-		//		bool copied = copyAlongToDoubleCurrentPos(expRegCol, chunk, chunksAdjustment, bitsAdjustment, colLength);
-		//		if (!copied) break;
-		//		
-		//		if (chunk > lastChunkToAggregate) break;
-		//		
-		//		colsAggregate[chunk + chunksAdjustment] |= expRegCol[chunk] << bitsAdjustment;
-		//		colsAggregate[chunk + chunksAdjustment + 1] |= (bitsAdjustment > 0) * (expRegCol[chunk] >> (CHUNK_BITS - bitsAdjustment));
-		//		
-		//		if (chunk + chunksAdjustment < (nextRoundAdjustment / CHUNK_BITS)) {
-		//			if (~colsAggregate[chunk + chunksAdjustment] != 0) { // If any bits OFF
-		//				// Then find & print the position of the OFF bits
-		//				for (uint64_t i = 0; i < CHUNK_BITS; i++) {
-		//					if ((~colsAggregate[chunk + chunksAdjustment]) & (1ULL << i)) {
-		//						cout << "\r";
-		//						printTime();
-		//						cout << ": found zero: " << bitPosToNum((chunk + chunksAdjustment) * 64 + i) << endl;
-		//					}
-		//				}
-		//			}
-		//		}
-		//		
-		//		if ((chunk & 0xFFFF) == 0) { \
-		//			cout << "\r" << "at: " << powOf3 << ", " << (chunk * 64); \
-		//		}
-		//	}
-		//	
-		//	for (; chunk <= lastChunkToAggregate; chunk++) {
-		//		colsAggregate[chunk + chunksAdjustment] |= expRegCol[chunk] << bitsAdjustment;
-		//		colsAggregate[chunk + chunksAdjustment + 1] |= (bitsAdjustment > 0) * (expRegCol[chunk] >> (CHUNK_BITS - bitsAdjustment));
-		//		
-		//		if (chunk + chunksAdjustment < (nextRoundAdjustment / CHUNK_BITS)) {
-		//			if (~colsAggregate[chunk + chunksAdjustment] != 0) { // If any bits OFF
-		//				// Then find & print the position of the OFF bits
-		//				for (uint64_t i = 0; i < CHUNK_BITS; i++) {
-		//					if ((~colsAggregate[chunk + chunksAdjustment]) & (1ULL << i)) {
-		//						cout << "\r";
-		//						printTime();
-		//						cout << ": found zero: " << bitPosToNum((chunk + chunksAdjustment) * 64 + i) << endl;
-		//					}
-		//				}
-		//			}
-		//		}
-		//		
-		//		if ((chunk & 0xFFFF) == 0) { \
-		//			cout << "\r" << "at: " << powOf3 << ", " << (chunk * 64); \
-		//		}
-		//	}
+		#undef aggregate
+		#undef checkForZeros
+		#undef printProgress
 		
 		//	cout << "col:\r\n";
 		//	for (int i = 0; i < colLength; i++) {
@@ -407,15 +360,15 @@ void findAndPrintZeros() {
 		cout << ": beginning next column" << endl;
 	}
 	
+	cout << endl;
+	printTime();
+	cout << ": finished computing aggregate" << endl;
+	cout << endl;
+	
 	// Go through the columns aggregate, checking for any chunks with any zero bits
 	for (uint64_t chunk = 0; chunk < colLength; chunk++) {
 		if (~colsAggregate[chunk] != 0) { // If any bits OFF
-			// Then find & print the position of the OFF bits
-			for (uint64_t i = 0; i < CHUNK_BITS; i++) {
-				if ((~colsAggregate[chunk]) & (1ULL << i)) {
-					cout << "\r" << "found zero: " << bitPosToNum(chunk * 64 + i) << "\r\n";
-				}
-			}
+			printZeros(colsAggregate[chunk], chunk * 64);
 		}
 	}
 }
