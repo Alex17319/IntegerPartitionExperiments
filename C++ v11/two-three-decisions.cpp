@@ -161,7 +161,7 @@ uint64_t estimateMemAvailable()
 void findAndPrintZeros() {
 	//uint64_t estimatedMem = estimateMemAvailable();
 	//uint64_t estimatedMem = 100000L; // for taking sample output
-	uint64_t estimatedMem = 1000000000L;
+	uint64_t estimatedMem = 300000000L;
 	//uint64_t estimatedMem = 80000000000L;
 	
 	// Use 90% of the approx. available memory, rounded down to a multiple of 3
@@ -172,9 +172,13 @@ void findAndPrintZeros() {
 	uint64_t colLength = memToUse / 3;
 	//uint64_t colLength = 1;
 	
+	uint64_t maxBitPosition = colLength * CHUNK_BITS - 1;
+	uint64_t maxValueRepresentable = bitPosToNum(maxBitPosition);
+	
 	cout << "Estimated memory = " << estimatedMem << " uint64_t's\r\n";
 	cout << "Col length = " << colLength << "\r\n";
-	cout << "Max value = " << (colLength * 64) << "\r\n";
+	cout << "Max bit position = " << maxBitPosition << "\r\n";
+	cout << "Max value representable = " << maxValueRepresentable << "\r\n";
 	cout << "\r\n";
 	
 	uint64_t *prevExpRegCol = new uint64_t[colLength]();
