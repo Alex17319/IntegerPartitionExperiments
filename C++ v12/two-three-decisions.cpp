@@ -110,8 +110,7 @@ void initialiseColFirstChunk(uint64_t* chunk, uint64_t firstBitValueRepresented)
 //		if (destChunk2Num < colLength) newExpRegCol[destChunk2Num] |= prevExpRegCol[sourceChunkNum] >> (CHUNK_BITS - offset);
 //	}
 
-// returns true if did anything
-bool copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, uint64_t chunksAdjustment, uint64_t bitsAdjustment, uint64_t colLength) {
+void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, uint64_t chunksAdjustment, uint64_t bitsAdjustment, uint64_t colLength) {
 	uint64_t spread1 = 0;
 	uint64_t spread2 = 0;
 	
@@ -123,10 +122,10 @@ bool copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, u
 	spread2 <<= 1;
 	
 	uint64_t destChunksPos = sourceChunkNum * 2 + chunksAdjustment;
-	if (destChunksPos >= colLength) return false;
+	//if (destChunksPos >= colLength) return;
 	expRegCol[destChunksPos] |= spread1 << bitsAdjustment; // bitsAdjustment < 64 so this is safe
 	
-	if (destChunksPos + 1 >= colLength) return true;
+	//if (destChunksPos + 1 >= colLength) return;
 	expRegCol[destChunksPos + 1] |=
 		(spread2 << bitsAdjustment)
 		| ((bitsAdjustment > 0) * (spread1 >> (CHUNK_BITS - bitsAdjustment)));
@@ -136,11 +135,9 @@ bool copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, u
 	// bitsAdjustment will always be less than 64 though, so the first shift (and the shift
 	// earlier) are fine.
 	
-	if (destChunksPos + 2 >= colLength) return true;
+	//if (destChunksPos + 2 >= colLength) return;
 	expRegCol[destChunksPos + 2] |= (bitsAdjustment > 0) * (spread2 >> (CHUNK_BITS - bitsAdjustment));
 	// if bitsAdjustment == 0 then the shift will be 64 bits, which is undefined behaviour as before
-	
-	return true;
 }
 
 // Based on https://stackoverflow.com/a/26639774/4149474
@@ -204,7 +201,7 @@ void findAndPrintZeros() {
 	cout << "Max value representable = " << maxValueRepresentable << "\r\n";
 	cout << "\r\n";
 	
-	uint64_t *expRegCol = new uint64_t[colLength]();
+	uint64_t *expRegCol = new uint64_t[colLength + 2](); // 2 chunks of overflow so doubling method can be branchless
 	uint64_t *colsAggregate = new uint64_t[colLength]();
 	
 	printTime();
@@ -249,7 +246,7 @@ void findAndPrintZeros() {
 		// bits beyond this are redundant - they don't overlap with the aggregate column
 		
 		uint64_t lastChunkToAggregate = lastBitToAggregate / CHUNK_BITS + 1; // not sure why +1 but it fixes it
-		uint64_t lastChunkToDouble = (colLength + chunksAdjustment - 1) / 2;
+		uint64_t lastChunkToDouble = (colLength - chunksAdjustment - 1) / 2;
 		uint64_t lastChunkToCheckZeros = min((nextRoundAdjustment / CHUNK_BITS) - chunksAdjustment, lastChunkToAggregate);
 		
 		#define aggregate() \
