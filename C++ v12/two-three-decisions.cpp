@@ -164,7 +164,7 @@ uint64_t estimateMemAvailable()
 
 void findAndPrintZeros() {
 	//uint64_t estimatedMem = estimateMemAvailable();
-	uint64_t estimatedMem = 400000000L;
+	uint64_t estimatedMem = 20000000L;
 	//uint64_t estimatedMem = 200000000L;
 	//uint64_t estimatedMem = 80000000000L;
 	
@@ -215,20 +215,26 @@ void findAndPrintZeros() {
 	uint64_t firstBitValueRepresented = 1;
 	for (int powOf3 = 1; true; powOf3++) {
 		firstBitValueRepresented += threeToThe(powOf3);
+		
 		uint64_t nextRoundFirstBitValueRepresented = firstBitValueRepresented + threeToThe(powOf3 + 1);
+		uint64_t nextRoundAdjustment = numToBitPos(nextRoundFirstBitValueRepresented);
 		
 		if (firstBitValueRepresented > maxValueRepresentable) break;
 		
 		initialiseColFirstChunk(expRegCol, firstBitValueRepresented);
 		
 		// Note: Don't print progress too often, or flush, as either may slow things
-		// Chose a power of 2 as the interval to possibly be nice to the branch
+		// I chose a power of 2 as the interval to possibly be nice to the branch
 		// predictor etc, also being able to do '&' instead of '%' is neat.
 		
 		uint64_t lastBitSettable = numToBitPos(maxValueRepresentable - firstBitValueRepresented + 1);
 		// bits beyond this are redundant - they don't overlap with the aggregate column
 		
 		uint64_t lastChunkSettable = lastBitSettable / CHUNK_BITS;
+		
+		uint64_t adjustment = numToBitPos(firstBitValueRepresented);
+		uint64_t chunksAdjustment = adjustment / CHUNK_BITS;
+		uint64_t bitsAdjustment = adjustment % CHUNK_BITS;
 		
 		uint64_t chunk = 0;
 		for (; chunk < colLength; chunk++) {
@@ -237,13 +243,21 @@ void findAndPrintZeros() {
 			
 			if (chunk > lastChunkSettable) break;
 			
-			uint64_t adjustment = numToBitPos(firstBitValueRepresented);
-			uint64_t chunksAdjustment = adjustment / CHUNK_BITS;
-			uint64_t bitsAdjustment = adjustment % CHUNK_BITS;
-			
 			colsAggregate[chunk + chunksAdjustment] |= expRegCol[chunk] << bitsAdjustment;
 			colsAggregate[chunk + chunksAdjustment + 1] |= (bitsAdjustment > 0) * (expRegCol[chunk] >> (CHUNK_BITS - bitsAdjustment));
-			//if (chunk < 
+			
+			if (chunk + chunksAdjustment > 0 && chunk + chunksAdjustment < (nextRoundAdjustment / CHUNK_BITS)) {
+				if (~colsAggregate[chunk + chunksAdjustment] != 0) { // If any bits OFF
+					// Then find & print the position of the OFF bits
+					for (uint64_t i = 0; i < CHUNK_BITS; i++) {
+						if ((~colsAggregate[chunk + chunksAdjustment]) & (1ULL << i)) {
+							time_t time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+							
+							cout << "\r" << "found zero: " << bitPosToNum((chunk + chunksAdjustment) * 64 + i) << "\r\n";
+						}
+					}
+				}
+			}
 			
 			if ((chunk & 0xFFFF) == 0) { \
 				cout << "\r" << "at: " << powOf3 << ", " << (chunk * 64); \
@@ -251,10 +265,6 @@ void findAndPrintZeros() {
 		}
 		
 		for (; chunk <= lastChunkSettable; chunk++) {
-			uint64_t adjustment = numToBitPos(firstBitValueRepresented);
-			uint64_t chunksAdjustment = adjustment / CHUNK_BITS;
-			uint64_t bitsAdjustment = adjustment % CHUNK_BITS;
-			
 			colsAggregate[chunk + chunksAdjustment] |= expRegCol[chunk] << bitsAdjustment;
 			colsAggregate[chunk + chunksAdjustment + 1] |= (bitsAdjustment > 0) * (expRegCol[chunk] >> (CHUNK_BITS - bitsAdjustment));
 			
