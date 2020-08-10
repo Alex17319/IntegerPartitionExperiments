@@ -20,6 +20,15 @@ using namespace std;
 
 const int CHUNK_BITS = 64;
 
+void printTime() {
+	time_t time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
+	
+	// from https://stackoverflow.com/a/44360248/4149474 and https://stackoverflow.com/a/9101683/4149474
+	auto gmt_time = gmtime(&time_now);
+    auto timestamp = std::put_time(gmt_time, "%c");
+	cout << timestamp;
+}
+
 // prints from bytes in memory, so affected by endianness
 void printIntBits_memory(unsigned int x) {
 	char bytes[sizeof(unsigned int)];
@@ -188,8 +197,9 @@ void findAndPrintZeros() {
 	uint64_t *expRegCol = new uint64_t[colLength]();
 	uint64_t *colsAggregate = new uint64_t[colLength]();
 	
-	time_t time_alloc = chrono::system_clock::to_time_t(chrono::system_clock::now());
-	cout << "Allocated @ " << ctime(&time_alloc); // ctime() adds a newline
+	cout << "Allocated @ ";
+	printTime();
+	cout << endl;
 	
 	// zero the arrays
 	for (uint64_t i = 0; i < colLength; i++) {
@@ -208,8 +218,9 @@ void findAndPrintZeros() {
 		colsAggregate[i] |= expRegCol[i];
 	}
 	
-	time_t time_setupdone = chrono::system_clock::to_time_t(chrono::system_clock::now());
-	cout << "Finished setup @ " << ctime(&time_setupdone); // ctime() adds a newline
+	cout << "Finished setup @ ";
+	printTime();
+	cout << endl;
 	
 	// Fill in each next column, until doing so does nothing
 	uint64_t firstBitValueRepresented = 1;
@@ -251,9 +262,9 @@ void findAndPrintZeros() {
 					// Then find & print the position of the OFF bits
 					for (uint64_t i = 0; i < CHUNK_BITS; i++) {
 						if ((~colsAggregate[chunk + chunksAdjustment]) & (1ULL << i)) {
-							time_t time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
-							
-							cout << "\r" << "found zero: " << bitPosToNum((chunk + chunksAdjustment) * 64 + i) << "\r\n";
+							cout << "\r";
+							printTime();
+							cout << ": found zero: " << bitPosToNum((chunk + chunksAdjustment) * 64 + i) << endl;
 						}
 					}
 				}
@@ -273,9 +284,9 @@ void findAndPrintZeros() {
 					// Then find & print the position of the OFF bits
 					for (uint64_t i = 0; i < CHUNK_BITS; i++) {
 						if ((~colsAggregate[chunk + chunksAdjustment]) & (1ULL << i)) {
-							time_t time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
-							
-							cout << "\r" << "found zero: " << bitPosToNum((chunk + chunksAdjustment) * 64 + i) << "\r\n";
+							cout << "\r";
+							printTime();
+							cout << ": found zero: " << bitPosToNum((chunk + chunksAdjustment) * 64 + i) << endl;
 						}
 					}
 				}
@@ -313,15 +324,16 @@ void findAndPrintZeros() {
 		//		}
 		//	}
 		
-		time_t time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
-		cout << "\rFinished column for shift of 3^" << powOf3 << " @ " << ctime(&time_now); // ctime() adds a newline
+		cout << "\r";
+		printTime();
+		cout << ": finished column for shift of 3^" << powOf3 << endl;
 		//	for (uint64_t i = colLength - 500; i < colLength; i++) {
 		//		printUInt64Bits_cpu(prevExpRegCol[i]);
 		//		cout << "\r\n";
 		//	}
 		
-		time_t time_movenext = chrono::system_clock::to_time_t(chrono::system_clock::now());
-		cout << "Beginning next column @ " << ctime(&time_movenext); // ctime() adds a newline
+		printTime();
+		cout << ": beginning next column" << endl;
 	}
 	
 	// Go through the columns aggregate, checking for any chunks with any zero bits
@@ -330,8 +342,6 @@ void findAndPrintZeros() {
 			// Then find & print the position of the OFF bits
 			for (uint64_t i = 0; i < CHUNK_BITS; i++) {
 				if ((~colsAggregate[chunk]) & (1ULL << i)) {
-					time_t time_now = chrono::system_clock::to_time_t(chrono::system_clock::now());
-					
 					cout << "\r" << "found zero: " << bitPosToNum(chunk * 64 + i) << "\r\n";
 				}
 			}
@@ -350,14 +360,15 @@ int main(int argc, char *argv[]) {
 		return -1;
 	}
 	
-	auto start = chrono::system_clock::now();
-	time_t start_time = chrono::system_clock::to_time_t(start);
-	cout << "Started at: " << ctime(&start_time); // ctime() adds a newline
+	cout << "Started at: ";
+	printTime();
+	cout << endl;
 	cout << endl;
 	
 	findAndPrintZeros();
 	
 	cout << endl;
-	time_t finish_time = chrono::system_clock::to_time_t(chrono::system_clock::now());
-	cout << "Finished at: " << ctime(&finish_time); // ctime() adds a newline
+	cout << "Finished at: ";
+	printTime();
+	cout << endl;
 }
