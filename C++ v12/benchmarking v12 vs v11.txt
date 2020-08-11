@@ -107,6 +107,13 @@ Approx 1h 39mins = 99mins ~= 77% of V11 time
 
 
 
+
+
+
+
+
+
+
 ---------------- V11 ----------------
 Started at: Tue Aug 11 18:35:23 2020
 
@@ -191,4 +198,116 @@ Approx. 2h 8mins = 128mins
 
 
 
+
+
+
+
+
+
+
 ---------------- V12 WITH MACROS ETC ----------------
+Started at: Tue Aug 11 11:22:30 2020
+
+Estimated memory = 2000000000 uint64_t's
+Col length = 900000000
+Max bit position = 57599999999
+Max value representable = 86399999999
+
+Tue Aug 11 11:22:56 2020: allocated
+Tue Aug 11 11:23:57 2020: finished setup
+
+Tue Aug 11 11:25:04 2020: finished column for shift of 3^1
+Tue Aug 11 11:25:04 2020: beginning next column
+Tue Aug 11 11:26:10 2020: finished column for shift of 3^2
+Tue Aug 11 11:26:10 2020: beginning next column
+Tue Aug 11 11:27:07 2020: finished column for shift of 3^3
+Tue Aug 11 11:27:07 2020: beginning next column
+Tue Aug 11 11:27:07 2020: found zero: 113
+Tue Aug 11 11:27:07 2020: found zero: 226
+Tue Aug 11 11:28:15 2020: finished column for shift of 3^4
+Tue Aug 11 11:28:15 2020: beginning next column
+Tue Aug 11 11:28:15 2020: found zero: 985
+Tue Aug 11 11:29:11 2020: finished column for shift of 3^5
+Tue Aug 11 11:29:11 2020: beginning next column
+Tue Aug 11 11:29:11 2020: found zero: 1970
+Tue Aug 11 11:29:11 2020: found zero: 3211
+Tue Aug 11 11:30:14 2020: finished column for shift of 3^6
+Tue Aug 11 11:30:14 2020: beginning next column
+Tue Aug 11 11:30:14 2020: found zero: 6422
+Tue Aug 11 11:31:47 2020: finished column for shift of 3^7
+Tue Aug 11 11:31:47 2020: beginning next column
+Tue Aug 11 11:31:47 2020: found zero: 27875
+Tue Aug 11 11:36:11 2020: finished column for shift of 3^8
+Tue Aug 11 11:36:11 2020: beginning next column
+Tue Aug 11 11:36:11 2020: found zero: 55750
+Tue Aug 11 11:40:09 2020: finished column for shift of 3^9
+Tue Aug 11 11:40:09 2020: beginning next column
+Tue Aug 11 11:40:09 2020: found zero: 242683
+Tue Aug 11 11:46:19 2020: finished column for shift of 3^10
+Tue Aug 11 11:46:19 2020: beginning next column
+Tue Aug 11 11:46:19 2020: found zero: 485366
+Tue Aug 11 11:46:19 2020: found zero: 793585
+Tue Aug 11 11:55:56 2020: finished column for shift of 3^11
+Tue Aug 11 11:55:56 2020: beginning next column
+Tue Aug 11 11:55:56 2020: found zero: 1587170
+Tue Aug 11 12:06:02 2020: finished column for shift of 3^12
+Tue Aug 11 12:06:02 2020: beginning next column
+Tue Aug 11 12:06:02 2020: found zero: 6880121
+Tue Aug 11 12:16:22 2020: finished column for shift of 3^13
+Tue Aug 11 12:16:22 2020: beginning next column
+Tue Aug 11 12:16:22 2020: found zero: 13760242
+Tue Aug 11 12:26:39 2020: finished column for shift of 3^14
+Tue Aug 11 12:26:39 2020: beginning next column
+Tue Aug 11 12:26:39 2020: found zero: 59823937
+Tue Aug 11 12:36:15 2020: finished column for shift of 3^15
+Tue Aug 11 12:36:15 2020: beginning next column
+Tue Aug 11 12:36:15 2020: found zero: 119647874
+Tue Aug 11 12:43:28 2020: finished column for shift of 3^16
+Tue Aug 11 12:43:28 2020: beginning next column
+Tue Aug 11 12:43:29 2020: found zero: 521638217
+Tue Aug 11 12:47:37 2020: finished column for shift of 3^17
+Tue Aug 11 12:47:37 2020: beginning next column
+Tue Aug 11 12:47:38 2020: found zero: 1043276434
+Tue Aug 11 12:47:39 2020: found zero: 1699132379
+Tue Aug 11 12:50:05 2020: finished column for shift of 3^18
+Tue Aug 11 12:50:05 2020: beginning next column
+Tue Aug 11 12:50:09 2020: found zero: 3398264758
+Tue Aug 11 12:51:38 2020: finished column for shift of 3^19
+Tue Aug 11 12:51:38 2020: beginning next column
+Tue Aug 11 12:51:52 2020: found zero: 14755320499
+Tue Aug 11 12:52:59 2020: finished column for shift of 3^20
+Tue Aug 11 12:52:59 2020: beginning next column
+Tue Aug 11 12:53:20 2020: found zero: 29510640998
+Tue Aug 11 12:54:09 2020: finished column for shift of 3^21
+Tue Aug 11 12:54:09 2020: beginning next column
+Tue Aug 11 12:54:50 2020: finished column for shift of 3^22
+Tue Aug 11 12:54:50 2020: beginning next column
+
+Tue Aug 11 12:54:50 2020: finished computing aggregate
+
+Tue Aug 11 12:54:50 2020: found zero: 113
+Tue Aug 11 12:54:50 2020: found zero: 226
+Tue Aug 11 12:54:50 2020: found zero: 985
+Tue Aug 11 12:54:50 2020: found zero: 1970
+Tue Aug 11 12:54:50 2020: found zero: 3211
+Tue Aug 11 12:54:50 2020: found zero: 6422
+Tue Aug 11 12:54:50 2020: found zero: 27875
+Tue Aug 11 12:54:50 2020: found zero: 55750
+Tue Aug 11 12:54:50 2020: found zero: 242683
+Tue Aug 11 12:54:50 2020: found zero: 485366
+Tue Aug 11 12:54:50 2020: found zero: 793585
+Tue Aug 11 12:54:50 2020: found zero: 1587170
+Tue Aug 11 12:54:50 2020: found zero: 6880121
+Tue Aug 11 12:54:50 2020: found zero: 13760242
+Tue Aug 11 12:54:50 2020: found zero: 59823937
+Tue Aug 11 12:54:50 2020: found zero: 119647874
+Tue Aug 11 12:54:50 2020: found zero: 521638217
+Tue Aug 11 12:54:50 2020: found zero: 1043276434
+Tue Aug 11 12:54:51 2020: found zero: 1699132379
+Tue Aug 11 12:54:51 2020: found zero: 3398264758
+Tue Aug 11 12:54:56 2020: found zero: 14755320499
+Tue Aug 11 12:55:01 2020: found zero: 29510640998
+
+Finished at: Tue Aug 11 12:55:21 2020
+
+Approx. 1h 33mins = 93mins ~= 94% of V12 orig time ~= 73% of V11 time
