@@ -112,7 +112,7 @@ void initialiseColFirstChunk(uint64_t* chunk, uint64_t firstBitValueRepresented)
 //	res = (shift > 0) * (num << shift);
 //	res = -(shift > 0) & (num << shift);
 
-void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, uint64_t chunksAdjustment, uint64_t colLength) {
+void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, uint64_t chunksAdjustment) {
 	uint64_t spread1 = 0;
 	uint64_t spread2 = 0;
 	
@@ -133,7 +133,7 @@ void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, u
 // and may be treated as a shift by 0 bits - not what we want. We want to just erase the value completely
 // when shifting by 64, so instead, use the version that does not have a bitsAdjustment argument.
 // bitsAdjustmentComplement = CHUNK_BITS - bitsAdjustment.
-void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, uint64_t chunksAdjustment, uint64_t bitsAdjustment, uint64_t bitsAdjustmentComplement, uint64_t colLength) {
+void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, uint64_t chunksAdjustment, uint64_t bitsAdjustment, uint64_t bitsAdjustmentComplement) {
 	uint64_t spread1 = 0;
 	uint64_t spread2 = 0;
 	
@@ -255,6 +255,7 @@ void findAndPrintZeros() {
 		uint64_t adjustment = numToBitPos(firstBitValueRepresented);
 		uint64_t chunksAdjustment = adjustment / CHUNK_BITS;
 		uint64_t bitsAdjustment = adjustment % CHUNK_BITS;
+		uint64_t bitsAdjustmentComplement = CHUNK_BITS - bitsAdjustment;
 		
 		uint64_t lastBitToAggregate = numToBitPos(maxValueRepresentable - firstBitValueRepresented + 1);
 		// bits beyond this are redundant - they don't overlap with the aggregate column
@@ -288,12 +289,20 @@ void findAndPrintZeros() {
 		
 		uint64_t chunk = 0;
 		uint64_t firstLimit = min(lastChunkToDouble, lastChunkToCheckZeros);
-		for (; chunk < firstLimit; chunk++) {
-			copyAlongToDoubleCurrentPos(expRegCol, chunk, chunksAdjustment, bitsAdjustment, colLength);
-			
-			aggregate();
-			checkForZeros();
-			printProgress();
+		if (bitsAdjustment == 0) {
+			for (; chunk < firstLimit; chunk++) {
+				copyAlongToDoubleCurrentPos(expRegCol, chunk, chunksAdjustment);
+				aggregate();
+				checkForZeros();
+				printProgress();
+			}
+		} else {
+			for (; chunk < firstLimit; chunk++) {
+				copyAlongToDoubleCurrentPos(expRegCol, chunk, chunksAdjustment, bitsAdjustment, bitsAdjustmentComplement);
+				aggregate();
+				checkForZeros();
+				printProgress();
+			}
 		}
 		// Now we're either done doubling, or done checking for zeros
 		
@@ -308,18 +317,31 @@ void findAndPrintZeros() {
 		
 		// Continue until we're either done doubling, or done aggregating
 		uint64_t secondLimit = min(lastChunkToDouble, lastChunkToAggregate);
-		for (; chunk < secondLimit; chunk++) {
-			copyAlongToDoubleCurrentPos(expRegCol, chunk, chunksAdjustment, bitsAdjustment, colLength);
-			
-			aggregate();
-			printProgress();
+		if (bitsAdjustment == 0) {
+			for (; chunk < secondLimit; chunk++) {
+				copyAlongToDoubleCurrentPos(expRegCol, chunk, chunksAdjustment);
+				aggregate();
+				printProgress();
+			}
+		} else {
+			for (; chunk < secondLimit; chunk++) {
+				copyAlongToDoubleCurrentPos(expRegCol, chunk, chunksAdjustment, bitsAdjustment, bitsAdjustmentComplement);
+				aggregate();
+				printProgress();
+			}
 		}
 		
 		// If we're done aggregating, continue along with the rest of the doubling
-		for (; chunk < lastChunkToDouble; chunk++) {
-			copyAlongToDoubleCurrentPos(expRegCol, chunk, chunksAdjustment, bitsAdjustment, colLength);
-			
-			printProgress();
+		if (bitsAdjustment == 0) {
+			for (; chunk < lastChunkToDouble; chunk++) {
+				copyAlongToDoubleCurrentPos(expRegCol, chunk, chunksAdjustment);
+				printProgress();
+			}
+		} else {
+			for (; chunk < lastChunkToDouble; chunk++) {
+				copyAlongToDoubleCurrentPos(expRegCol, chunk, chunksAdjustment, bitsAdjustment, bitsAdjustmentComplement);
+				printProgress();
+			}
 		}
 		
 		// Otherwise, if we're done doubling, continue along with the rest of the aggregating
