@@ -116,7 +116,7 @@ void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, u
 	uint64_t spread1 = 0;
 	uint64_t spread2 = 0;
 	
-	spreadBitsPaired(expRegCol[sourceChunkNum], &spread1, &spread2);
+	spreadBitsPaired_macro(expRegCol[sourceChunkNum], spread1, spread2);
 	
 	// do the offset that's present in spreadAndOrBits_noMult3()
 	// but not spreadBitsPaired()
@@ -137,7 +137,7 @@ void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, u
 	uint64_t spread1 = 0;
 	uint64_t spread2 = 0;
 	
-	spreadBitsPaired(expRegCol[sourceChunkNum], &spread1, &spread2);
+	spreadBitsPaired_macro(expRegCol[sourceChunkNum], spread1, spread2);
 	
 	// do the offset that's present in spreadAndOrBits_noMult3()
 	// but not spreadBitsPaired()
