@@ -69,12 +69,16 @@ void printUInt64Bits_cpu_reverse(uint64_t x) {
 
 // These are accurate when the first bit represents the value 1.
 // Otherwise, you need to adjust the input/output (TODO: Detail how)
-uint64_t numToBitPos(uint64_t number) {
-	return number - (uint64_t)(number/3) - 1;
-}
-uint64_t bitPosToNum(uint64_t bitPos) {
-	return bitPos + (uint64_t)(bitPos/2) + 1;
-}
+#define numToBitPos(number) \
+	((number) - ((number) / 3) - 1);
+#define bitPosToNum(bitPos) \
+	((bitPos) + ((bitPos) / 2) + 1);
+//	uint64_t numToBitPos(uint64_t number) {
+//		return number - (uint64_t)(number/3) - 1;
+//	}
+//	uint64_t bitPosToNum(uint64_t bitPos) {
+//		return bitPos + (uint64_t)(bitPos/2) + 1;
+//	}
 
 // the process is more complex for first chunk (as doubling
 // can leave you in the same chunk; in later chunks it never does)
@@ -99,18 +103,16 @@ void initialiseColFirstChunk(uint64_t* chunk, uint64_t firstBitValueRepresented)
 	}
 }
 
-//	void copyAlongByPowerOfThree(uint64_t* prevExpRegCol, uint64_t* newExpRegCol, uint64_t sourceChunkNum, uint64_t computedPowOf3, uint64_t colLength) {
-//		uint64_t shift = computedPowOf3 / 3 * 2; // adjust for missing multiples of 3
-//		uint64_t offset = shift % CHUNK_BITS;
-//		
-//		uint64_t destChunk1Num = sourceChunkNum + (shift - offset)/CHUNK_BITS;
-//		uint64_t destChunk2Num = destChunk1Num + 1;
-//		
-//		if (destChunk1Num < colLength) newExpRegCol[destChunk1Num] |= prevExpRegCol[sourceChunkNum] << offset;
-//		if (destChunk2Num < colLength) newExpRegCol[destChunk2Num] |= prevExpRegCol[sourceChunkNum] >> (CHUNK_BITS - offset);
-//	}
+//	bitshift alternatives that erase when shifting by 64:
+//	uint64_t num = 0;
+//	uint64_t shift = 0;
+//	uint64_t res = (num << (shift / 2)) << ((shift + 1) / 2);
+//	res = (num << (shift >> 1)) << ((shift + 1) >> 1);
+//	res = (num << (shift - (shift > 0))) << (shift > 0);
+//	res = (shift > 0) * (num << shift);
+//	res = -(shift > 0) & (num << shift);
 
-void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, uint64_t chunksAdjustment, uint64_t bitsAdjustment, uint64_t colLength) {
+void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, uint64_t chunksAdjustment, uint64_t colLength) {
 	uint64_t spread1 = 0;
 	uint64_t spread2 = 0;
 	
@@ -122,30 +124,34 @@ void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, u
 	spread2 <<= 1;
 	
 	uint64_t destChunksPos = sourceChunkNum * 2 + chunksAdjustment;
-	//if (destChunksPos >= colLength) return;
-	expRegCol[destChunksPos] |= spread1 << bitsAdjustment; // bitsAdjustment < 64 so this is safe
+	expRegCol[destChunksPos] |= spread1;
+	expRegCol[destChunksPos + 1] |= spread2;
+}
+
+// bitsAdjustment must be between 1 and 63 both inclusive.
+// If bitsAdjustment == 0 then some of the shifts will be by 64 bits, which is undefined behaviour,
+// and may be treated as a shift by 0 bits - not what we want. We want to just erase the value completely
+// when shifting by 64, so instead, use the version that does not have a bitsAdjustment argument.
+// bitsAdjustmentComplement = CHUNK_BITS - bitsAdjustment.
+void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, uint64_t chunksAdjustment, uint64_t bitsAdjustment, uint64_t bitsAdjustmentComplement, uint64_t colLength) {
+	uint64_t spread1 = 0;
+	uint64_t spread2 = 0;
 	
-	//	uint64_t num = 0;
-	//	uint64_t shift = 0;
-	//	uint64_t res = (num << (shift / 2)) << ((shift + 1) / 2);
-	//	res = (num << (shift >> 1)) << ((shift + 1) >> 1);
-	//	res = (num << (shift - (shift > 0))) << (shift > 0);
-	//	res = (shift > 0) * (num << shift);
-	//	res = -(shift > 0) & (num << shift);
+	spreadBitsPaired(expRegCol[sourceChunkNum], &spread1, &spread2);
 	
-	//if (destChunksPos + 1 >= colLength) return;
+	// do the offset that's present in spreadAndOrBits_noMult3()
+	// but not spreadBitsPaired()
+	spread1 <<= 1;
+	spread2 <<= 1;
+	
+	uint64_t destChunksPos = sourceChunkNum * 2 + chunksAdjustment;
+	expRegCol[destChunksPos] |= spread1 << bitsAdjustment;
+	
 	expRegCol[destChunksPos + 1] |=
 		(spread2 << bitsAdjustment)
-		| ((bitsAdjustment > 0) * (spread1 >> (CHUNK_BITS - bitsAdjustment)));
-	// if bitsAdjustment == 0 then the second shift will be 64 bits, which is undefined behaviour,
-	// and may be treated as a shift by 0 bits - not what we want. We want to just erase the
-	// value completely when shifting by 64, so instead multiply by zero (rather than 1) to ignore the result.
-	// bitsAdjustment will always be less than 64 though, so the first shift (and the shift
-	// earlier) are fine.
+		| (spread1 >> bitsAdjustmentComplement);
 	
-	//if (destChunksPos + 2 >= colLength) return;
-	expRegCol[destChunksPos + 2] |= (bitsAdjustment > 0) * (spread2 >> (CHUNK_BITS - bitsAdjustment));
-	// if bitsAdjustment == 0 then the shift will be 64 bits, which is undefined behaviour as before
+	expRegCol[destChunksPos + 2] |= spread2 >> bitsAdjustmentComplement;
 }
 
 // Based on https://stackoverflow.com/a/26639774/4149474
@@ -263,7 +269,7 @@ void findAndPrintZeros() {
 			aggChunks[0] |= expRegCol[chunk] << bitsAdjustment; \
 			aggChunks[1] |= (bitsAdjustment > 0) * (expRegCol[chunk] >> (CHUNK_BITS - bitsAdjustment));
 		
-		// Tests if any bits are OFF. If so, then finds them & print the numbers they represent
+		// Tests if any bits are OFF. If so, then finds them & prints the numbers they represent
 		#define checkForZeros() { \
 			if (~aggChunks[0] != 0) { \
 				cout << "\r"; \

@@ -41,4 +41,22 @@ void spreadBitsPaired(uint64_t x, uint64_t *low, uint64_t *high);
 #define mapToAvoidMult3s(n) \
 	((n) - (uint64_t)((n) / 3) - 1)
 
+#define spreadBitsPaired_macro(x, low, high) { \
+	uint64_t xLow = (x) & 0x00000000FFFFFFFF; \
+	uint64_t xHigh = ((x) & 0xFFFFFFFF00000000) >> 32; \
+	\
+	xLow = (xLow | (xLow << 16)) & 0x0000FFFF0000FFFF; \
+	xLow = (xLow | (xLow << 8 )) & 0x00FF00FF00FF00FF; \
+	xLow = (xLow | (xLow << 4 )) & 0x0F0F0F0F0F0F0F0F; \
+	xLow = (xLow | (xLow << 2 )) & 0x3333333333333333; \
+	\
+	xHigh = (xHigh | (xHigh << 16)) & 0x0000FFFF0000FFFF; \
+	xHigh = (xHigh | (xHigh << 8 )) & 0x00FF00FF00FF00FF; \
+	xHigh = (xHigh | (xHigh << 4 )) & 0x0F0F0F0F0F0F0F0F; \
+	xHigh = (xHigh | (xHigh << 2 )) & 0x3333333333333333; \
+	\
+	low = xLow; \
+	high = xHigh; \
+}
+
 #endif
