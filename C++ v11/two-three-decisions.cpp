@@ -161,7 +161,7 @@ uint64_t estimateMemAvailable()
 void findAndPrintZeros() {
 	//uint64_t estimatedMem = estimateMemAvailable();
 	//uint64_t estimatedMem = 100000L; // for taking sample output
-	uint64_t estimatedMem = 300000000L;
+	uint64_t estimatedMem = 3000000000L;
 	//uint64_t estimatedMem = 80000000000L;
 	
 	// Use 90% of the approx. available memory, rounded down to a multiple of 3

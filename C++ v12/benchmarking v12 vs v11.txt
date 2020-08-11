@@ -1,0 +1,107 @@
+---------------- V12 ----------------
+Started at: Mon Aug 10 11:31:20 2020
+
+Estimated memory = 2000000000 uint64_t's
+Col length = 900000000
+Max bit position = 57599999999
+Max value representable = 86399999999
+
+Mon Aug 10 11:32:03 2020: allocated
+Mon Aug 10 11:33:12 2020: finished setup
+
+Mon Aug 10 11:34:18 2020: finished column for shift of 3^1
+Mon Aug 10 11:34:18 2020: beginning next column
+Mon Aug 10 11:35:24 2020: finished column for shift of 3^2
+Mon Aug 10 11:35:24 2020: beginning next column
+Mon Aug 10 11:36:27 2020: finished column for shift of 3^3
+Mon Aug 10 11:36:27 2020: beginning next column
+Mon Aug 10 11:36:27 2020: found zero: 113
+Mon Aug 10 11:36:27 2020: found zero: 226
+Mon Aug 10 11:37:29 2020: finished column for shift of 3^4
+Mon Aug 10 11:37:29 2020: beginning next column
+Mon Aug 10 11:37:29 2020: found zero: 985
+Mon Aug 10 11:38:41 2020: finished column for shift of 3^5
+Mon Aug 10 11:38:41 2020: beginning next column
+Mon Aug 10 11:38:41 2020: found zero: 1970
+Mon Aug 10 11:38:41 2020: found zero: 3211
+Mon Aug 10 11:39:59 2020: finished column for shift of 3^6
+Mon Aug 10 11:39:59 2020: beginning next column
+Mon Aug 10 11:39:59 2020: found zero: 6422
+Mon Aug 10 11:41:42 2020: finished column for shift of 3^7
+Mon Aug 10 11:41:42 2020: beginning next column
+Mon Aug 10 11:41:42 2020: found zero: 27875
+Mon Aug 10 11:44:06 2020: finished column for shift of 3^8
+Mon Aug 10 11:44:06 2020: beginning next column
+Mon Aug 10 11:44:06 2020: found zero: 55750
+Mon Aug 10 11:47:20 2020: finished column for shift of 3^9
+Mon Aug 10 11:47:20 2020: beginning next column
+Mon Aug 10 11:47:20 2020: found zero: 242683
+Mon Aug 10 11:52:56 2020: finished column for shift of 3^10
+Mon Aug 10 11:52:56 2020: beginning next column
+Mon Aug 10 11:52:56 2020: found zero: 485366
+Mon Aug 10 11:52:56 2020: found zero: 793585
+Mon Aug 10 12:03:35 2020: finished column for shift of 3^11
+Mon Aug 10 12:03:35 2020: beginning next column
+Mon Aug 10 12:03:35 2020: found zero: 1587170
+Mon Aug 10 12:14:31 2020: finished column for shift of 3^12
+Mon Aug 10 12:14:31 2020: beginning next column
+Mon Aug 10 12:14:31 2020: found zero: 6880121
+Mon Aug 10 12:26:04 2020: finished column for shift of 3^13
+Mon Aug 10 12:26:04 2020: beginning next column
+Mon Aug 10 12:26:04 2020: found zero: 13760242
+Mon Aug 10 12:35:29 2020: finished column for shift of 3^14
+Mon Aug 10 12:35:29 2020: beginning next column
+Mon Aug 10 12:35:29 2020: found zero: 59823937
+Mon Aug 10 12:46:01 2020: finished column for shift of 3^15
+Mon Aug 10 12:46:01 2020: beginning next column
+Mon Aug 10 12:46:01 2020: found zero: 119647874
+Mon Aug 10 12:54:26 2020: finished column for shift of 3^16
+Mon Aug 10 12:54:26 2020: beginning next column
+Mon Aug 10 12:54:27 2020: found zero: 521638217
+Mon Aug 10 13:00:27 2020: finished column for shift of 3^17
+Mon Aug 10 13:00:27 2020: beginning next column
+Mon Aug 10 13:00:28 2020: found zero: 1043276434
+Mon Aug 10 13:00:31 2020: found zero: 1699132379
+Mon Aug 10 13:03:30 2020: finished column for shift of 3^18
+Mon Aug 10 13:03:30 2020: beginning next column
+Mon Aug 10 13:03:33 2020: found zero: 3398264758
+Mon Aug 10 13:05:23 2020: finished column for shift of 3^19
+Mon Aug 10 13:05:23 2020: beginning next column
+Mon Aug 10 13:05:44 2020: found zero: 14755320499
+Mon Aug 10 13:07:08 2020: finished column for shift of 3^20
+Mon Aug 10 13:07:08 2020: beginning next column
+Mon Aug 10 13:07:42 2020: found zero: 29510640998
+Mon Aug 10 13:08:59 2020: finished column for shift of 3^21
+Mon Aug 10 13:08:59 2020: beginning next column
+Mon Aug 10 13:10:03 2020: finished column for shift of 3^22
+Mon Aug 10 13:10:03 2020: beginning next column
+
+Mon Aug 10 13:10:03 2020: finished computing aggregate
+
+Mon Aug 10 13:10:03 2020: found zero: 113
+Mon Aug 10 13:10:03 2020: found zero: 226
+Mon Aug 10 13:10:03 2020: found zero: 985
+Mon Aug 10 13:10:03 2020: found zero: 1970
+Mon Aug 10 13:10:03 2020: found zero: 3211
+Mon Aug 10 13:10:03 2020: found zero: 6422
+Mon Aug 10 13:10:03 2020: found zero: 27875
+Mon Aug 10 13:10:03 2020: found zero: 55750
+Mon Aug 10 13:10:03 2020: found zero: 242683
+Mon Aug 10 13:10:03 2020: found zero: 485366
+Mon Aug 10 13:10:03 2020: found zero: 793585
+Mon Aug 10 13:10:03 2020: found zero: 1587170
+Mon Aug 10 13:10:03 2020: found zero: 6880121
+Mon Aug 10 13:10:03 2020: found zero: 13760242
+Mon Aug 10 13:10:03 2020: found zero: 59823937
+Mon Aug 10 13:10:03 2020: found zero: 119647874
+Mon Aug 10 13:10:03 2020: found zero: 521638217
+Mon Aug 10 13:10:03 2020: found zero: 1043276434
+Mon Aug 10 13:10:03 2020: found zero: 1699132379
+Mon Aug 10 13:10:05 2020: found zero: 3398264758
+Mon Aug 10 13:10:11 2020: found zero: 14755320499
+Mon Aug 10 13:10:17 2020: found zero: 29510640998
+
+Finished at: Mon Aug 10 13:10:35 2020
+
+
+---------------- V11 ----------------

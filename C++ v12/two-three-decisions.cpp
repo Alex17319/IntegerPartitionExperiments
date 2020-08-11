@@ -125,6 +125,14 @@ void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, u
 	//if (destChunksPos >= colLength) return;
 	expRegCol[destChunksPos] |= spread1 << bitsAdjustment; // bitsAdjustment < 64 so this is safe
 	
+	//	uint64_t num = 0;
+	//	uint64_t shift = 0;
+	//	uint64_t res = (num << (shift / 2)) << ((shift + 1) / 2);
+	//	res = (num << (shift >> 1)) << ((shift + 1) >> 1);
+	//	res = (num << (shift - (shift > 0))) << (shift > 0);
+	//	res = (shift > 0) * (num << shift);
+	//	res = -(shift > 0) & (num << shift);
+	
 	//if (destChunksPos + 1 >= colLength) return;
 	expRegCol[destChunksPos + 1] |=
 		(spread2 << bitsAdjustment)
@@ -180,7 +188,7 @@ void printZeros(uint64_t chunk, uint64_t printOffset) {
 
 void findAndPrintZeros() {
 	//uint64_t estimatedMem = estimateMemAvailable();
-	uint64_t estimatedMem = 200000000L;
+	uint64_t estimatedMem = 2000000000L;
 	//uint64_t estimatedMem = 200000000L;
 	//uint64_t estimatedMem = 80000000000L;
 	
