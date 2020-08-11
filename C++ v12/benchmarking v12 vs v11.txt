@@ -103,5 +103,92 @@ Mon Aug 10 13:10:17 2020: found zero: 29510640998
 
 Finished at: Mon Aug 10 13:10:35 2020
 
+Approx 1h 39mins = 99mins ~= 77% of V11 time
+
+
 
 ---------------- V11 ----------------
+Started at: Tue Aug 11 18:35:23 2020
+
+Estimated memory = 3000000000 uint64_t's
+Col length = 900000000
+Max bit position = 57599999999
+Max value representable = 86399999999
+
+Allocated @ Tue Aug 11 18:36:36 2020
+Finished setup @ Tue Aug 11 18:37:45 2020
+Finished column for shift of 3^1 @ Tue Aug 11 18:38:53 2020
+Beginning next column @ Tue Aug 11 18:39:10 2020
+Finished column for shift of 3^2 @ Tue Aug 11 18:40:26 2020
+Beginning next column @ Tue Aug 11 18:40:42 2020
+Finished column for shift of 3^3 @ Tue Aug 11 18:41:47 2020
+Beginning next column @ Tue Aug 11 18:42:04 2020
+Finished column for shift of 3^4 @ Tue Aug 11 18:43:19 2020
+Beginning next column @ Tue Aug 11 18:43:37 2020
+Finished column for shift of 3^5 @ Tue Aug 11 18:44:53 2020
+Beginning next column @ Tue Aug 11 18:45:09 2020
+Finished column for shift of 3^6 @ Tue Aug 11 18:46:32 2020
+Beginning next column @ Tue Aug 11 18:46:53 2020
+Finished column for shift of 3^7 @ Tue Aug 11 18:48:34 2020
+Beginning next column @ Tue Aug 11 18:48:59 2020
+Finished column for shift of 3^8 @ Tue Aug 11 18:51:11 2020
+Beginning next column @ Tue Aug 11 18:51:45 2020
+Finished column for shift of 3^9 @ Tue Aug 11 18:55:18 2020
+Beginning next column @ Tue Aug 11 18:56:15 2020
+Finished column for shift of 3^10 @ Tue Aug 11 19:02:14 2020
+Beginning next column @ Tue Aug 11 19:03:53 2020
+Finished column for shift of 3^11 @ Tue Aug 11 19:13:36 2020
+Beginning next column @ Tue Aug 11 19:15:58 2020
+Finished column for shift of 3^12 @ Tue Aug 11 19:27:39 2020
+Beginning next column @ Tue Aug 11 19:30:08 2020
+Finished column for shift of 3^13 @ Tue Aug 11 19:42:35 2020
+Beginning next column @ Tue Aug 11 19:45:02 2020
+Finished column for shift of 3^14 @ Tue Aug 11 19:55:49 2020
+Beginning next column @ Tue Aug 11 19:57:58 2020
+Finished column for shift of 3^15 @ Tue Aug 11 20:07:06 2020
+Beginning next column @ Tue Aug 11 20:09:52 2020
+Finished column for shift of 3^16 @ Tue Aug 11 20:18:06 2020
+Beginning next column @ Tue Aug 11 20:20:24 2020
+Finished column for shift of 3^17 @ Tue Aug 11 20:26:10 2020
+Beginning next column @ Tue Aug 11 20:28:15 2020
+Finished column for shift of 3^18 @ Tue Aug 11 20:31:02 2020
+Beginning next column @ Tue Aug 11 20:32:27 2020
+Finished column for shift of 3^19 @ Tue Aug 11 20:34:32 2020
+Beginning next column @ Tue Aug 11 20:35:21 2020
+Finished column for shift of 3^20 @ Tue Aug 11 20:37:04 2020
+Beginning next column @ Tue Aug 11 20:37:36 2020
+Finished column for shift of 3^21 @ Tue Aug 11 20:39:26 2020
+Beginning next column @ Tue Aug 11 20:39:56 2020
+Finished column for shift of 3^22 @ Tue Aug 11 20:41:38 2020
+Beginning next column @ Tue Aug 11 20:42:07 2020
+Finished column for shift of 3^23 @ Tue Aug 11 20:43:05 2020
+found zero: 113
+found zero: 226
+found zero: 985
+found zero: 1970
+found zero: 3211
+found zero: 6422
+found zero: 27875
+found zero: 55750
+found zero: 242683
+found zero: 485366
+found zero: 793585
+found zero: 1587170
+found zero: 6880121
+found zero: 13760242
+found zero: 59823937
+found zero: 119647874
+found zero: 521638217
+found zero: 1043276434
+found zero: 1699132379
+found zero: 3398264758
+found zero: 14755320499
+found zero: 29510640998
+
+Finished at: Tue Aug 11 20:43:28 2020
+
+Approx. 2h 8mins = 128mins
+
+
+
+---------------- V12 WITH MACROS ETC ----------------

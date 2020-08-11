@@ -69,16 +69,16 @@ void printUInt64Bits_cpu_reverse(uint64_t x) {
 
 // These are accurate when the first bit represents the value 1.
 // Otherwise, you need to adjust the input/output (TODO: Detail how)
-#define numToBitPos(number) \
-	((number) - ((number) / 3) - 1);
-#define bitPosToNum(bitPos) \
-	((bitPos) + ((bitPos) / 2) + 1);
-//	uint64_t numToBitPos(uint64_t number) {
-//		return number - (uint64_t)(number/3) - 1;
-//	}
-//	uint64_t bitPosToNum(uint64_t bitPos) {
-//		return bitPos + (uint64_t)(bitPos/2) + 1;
-//	}
+//	#define numToBitPos(number) \
+//		((number) - ((number) / 3) - 1)
+//	#define bitPosToNum(bitPos) \
+//		((bitPos) + ((bitPos) / 2) + 1)
+uint64_t numToBitPos(uint64_t number) {
+	return number - (uint64_t)(number/3) - 1;
+}
+uint64_t bitPosToNum(uint64_t bitPos) {
+	return bitPos + (uint64_t)(bitPos/2) + 1;
+}
 
 // the process is more complex for first chunk (as doubling
 // can leave you in the same chunk; in later chunks it never does)
@@ -112,18 +112,56 @@ void initialiseColFirstChunk(uint64_t* chunk, uint64_t firstBitValueRepresented)
 //	res = (shift > 0) * (num << shift);
 //	res = -(shift > 0) & (num << shift);
 
-void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, uint64_t chunksAdjustment) {
+void copyAlongToDoubleCurrentPos_old(uint64_t* expRegCol, uint64_t sourceChunkNum, uint64_t chunksAdjustment, uint64_t bitsAdjustment) {
 	uint64_t spread1 = 0;
 	uint64_t spread2 = 0;
 	
-	spreadBitsPaired_macro(expRegCol[sourceChunkNum], spread1, spread2);
+	spreadBitsPaired(expRegCol[sourceChunkNum], &spread1, &spread2);
 	
 	// do the offset that's present in spreadAndOrBits_noMult3()
 	// but not spreadBitsPaired()
 	spread1 <<= 1;
 	spread2 <<= 1;
 	
-	uint64_t destChunksPos = sourceChunkNum << 1 + chunksAdjustment; // == sourceChunkNum * 2 + chunksAdjustment
+	uint64_t destChunksPos = sourceChunkNum * 2 + chunksAdjustment;
+	//if (destChunksPos >= colLength) return;
+	expRegCol[destChunksPos] |= spread1 << bitsAdjustment; // bitsAdjustment < 64 so this is safe
+	
+	//	uint64_t num = 0;
+	//	uint64_t shift = 0;
+	//	uint64_t res = (num << (shift / 2)) << ((shift + 1) / 2);
+	//	res = (num << (shift >> 1)) << ((shift + 1) >> 1);
+	//	res = (num << (shift - (shift > 0))) << (shift > 0);
+	//	res = (shift > 0) * (num << shift);
+	//	res = -(shift > 0) & (num << shift);
+	
+	//if (destChunksPos + 1 >= colLength) return;
+	expRegCol[destChunksPos + 1] |=
+		(spread2 << bitsAdjustment)
+		| ((bitsAdjustment > 0) * (spread1 >> (CHUNK_BITS - bitsAdjustment)));
+	// if bitsAdjustment == 0 then the second shift will be 64 bits, which is undefined behaviour,
+	// and may be treated as a shift by 0 bits - not what we want. We want to just erase the
+	// value completely when shifting by 64, so instead multiply by zero (rather than 1) to ignore the result.
+	// bitsAdjustment will always be less than 64 though, so the first shift (and the shift
+	// earlier) are fine.
+	
+	//if (destChunksPos + 2 >= colLength) return;
+	expRegCol[destChunksPos + 2] |= (bitsAdjustment > 0) * (spread2 >> (CHUNK_BITS - bitsAdjustment));
+	// if bitsAdjustment == 0 then the shift will be 64 bits, which is undefined behaviour as before
+}
+
+void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, uint64_t chunksAdjustment) {
+	uint64_t spread1 = 0;
+	uint64_t spread2 = 0;
+	
+	spreadBitsPaired(expRegCol[sourceChunkNum], &spread1, &spread2);
+	
+	// do the offset that's present in spreadAndOrBits_noMult3()
+	// but not spreadBitsPaired()
+	spread1 <<= 1;
+	spread2 <<= 1;
+	
+	uint64_t destChunksPos = (sourceChunkNum << 1) + chunksAdjustment; // == sourceChunkNum * 2 + chunksAdjustment
 	expRegCol[destChunksPos] |= spread1;
 	expRegCol[destChunksPos + 1] |= spread2;
 }
@@ -137,19 +175,19 @@ void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, u
 	uint64_t spread1 = 0;
 	uint64_t spread2 = 0;
 	
-	spreadBitsPaired_macro(expRegCol[sourceChunkNum], spread1, spread2);
+	spreadBitsPaired(expRegCol[sourceChunkNum], &spread1, &spread2);
 	
 	// do the offset that's present in spreadAndOrBits_noMult3()
 	// but not spreadBitsPaired()
 	spread1 <<= 1;
 	spread2 <<= 1;
 	
-	uint64_t destChunksPos = sourceChunkNum << 1 + chunksAdjustment; // == sourceChunkNum * 2 + chunksAdjustment
+	uint64_t destChunksPos = (sourceChunkNum << 1) + chunksAdjustment; // == sourceChunkNum * 2 + chunksAdjustment
 	expRegCol[destChunksPos] |= spread1 << bitsAdjustment;
 	
-	expRegCol[destChunksPos + 1] |= (spread2 << bitsAdjustment) | (spread1 >> bitsAdjustmentComplement);
+	expRegCol[destChunksPos + 1] |= (spread2 << bitsAdjustment) | (spread1 >> (CHUNK_BITS - bitsAdjustment));
 	
-	expRegCol[destChunksPos + 2] |= spread2 >> bitsAdjustmentComplement;
+	expRegCol[destChunksPos + 2] |= spread2 >> (CHUNK_BITS - bitsAdjustment);
 }
 
 #define copyAlongToDoubleCurrentPos_macro(expRegCol, sourceChunkNum, chunksAdjustment) { \
@@ -161,7 +199,7 @@ void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, u
 	spread1 <<= 1; \
 	spread2 <<= 1; \
 	\
-	uint64_t destChunksPos = (sourceChunkNum) << 1 + (chunksAdjustment); \
+	uint64_t destChunksPos = ((sourceChunkNum) << 1) + (chunksAdjustment); \
 	(expRegCol)[destChunksPos] |= spread1; \
 	(expRegCol)[destChunksPos + 1] |= spread2; \
 }
@@ -175,7 +213,7 @@ void copyAlongToDoubleCurrentPos(uint64_t* expRegCol, uint64_t sourceChunkNum, u
 	spread1 <<= 1; \
 	spread2 <<= 1; \
 	\
-	uint64_t destChunksPos = (sourceChunkNum) << 1 + (chunksAdjustment); \
+	uint64_t destChunksPos = ((sourceChunkNum) << 1) + (chunksAdjustment); \
 	(expRegCol)[destChunksPos] |= spread1 << (bitsAdjustment); \
 	\
 	(expRegCol)[destChunksPos + 1] |= (spread2 << (bitsAdjustment)) | (spread1 >> (bitsAdjustmentComplement)); \
@@ -224,7 +262,7 @@ void printZeros(uint64_t chunk, uint64_t printOffset) {
 void findAndPrintZeros() {
 	//uint64_t estimatedMem = estimateMemAvailable();
 	uint64_t estimatedMem = 2000000000L;
-	//uint64_t estimatedMem = 200000000L;
+	//uint64_t estimatedMem = 20000000L;
 	//uint64_t estimatedMem = 80000000000L;
 	
 	// Use 90% of the approx. available memory, rounded down to a multiple of 2
@@ -293,11 +331,18 @@ void findAndPrintZeros() {
 		uint64_t lastChunkToDouble = (colLength - chunksAdjustment - 1) / 2;
 		uint64_t lastChunkToCheckZeros = min((nextRoundAdjustment / CHUNK_BITS) - chunksAdjustment, lastChunkToAggregate);
 		
-		#define aggregate() \
+		// only for when bitsAdjustment == 0
+		#define aggregateAligned() \
+			uint64_t aggChunksPos = chunk + chunksAdjustment; \
+			uint64_t* aggChunks = colsAggregate + aggChunksPos; \
+			aggChunks[0] |= expRegCol[chunk];
+		
+		// only for when bitsAdjustment is between 1 and 63 both inclusive
+		#define aggregateBitAdjusted() \
 			uint64_t aggChunksPos = chunk + chunksAdjustment; \
 			uint64_t* aggChunks = colsAggregate + aggChunksPos; \
 			aggChunks[0] |= expRegCol[chunk] << bitsAdjustment; \
-			aggChunks[1] |= (bitsAdjustment > 0) * (expRegCol[chunk] >> (CHUNK_BITS - bitsAdjustment));
+			aggChunks[1] |= expRegCol[chunk] >> bitsAdjustmentComplement;
 		
 		// Tests if any bits are OFF. If so, then finds them & prints the numbers they represent
 		#define checkForZeros() { \
@@ -321,14 +366,14 @@ void findAndPrintZeros() {
 		if (bitsAdjustment == 0) {
 			for (; chunk < firstLimit; chunk++) {
 				copyAlongToDoubleCurrentPos_macro(expRegCol, chunk, chunksAdjustment);
-				aggregate();
+				aggregateAligned();
 				checkForZeros();
 				printProgress();
 			}
 		} else {
 			for (; chunk < firstLimit; chunk++) {
 				copyAlongToDoubleCurrentPos_macroBitAdjusted(expRegCol, chunk, chunksAdjustment, bitsAdjustment, bitsAdjustmentComplement);
-				aggregate();
+				aggregateBitAdjusted();
 				checkForZeros();
 				printProgress();
 			}
@@ -337,10 +382,18 @@ void findAndPrintZeros() {
 		
 		// If we're done doubling, continue along until we'e done checking for zeros
 		// Note that lastChunkToCheckZeros <= lastChunkToAggregate so aggregate() is always necessary (& won't go out of range)
-		for (; chunk < lastChunkToCheckZeros; chunk++) {
-			aggregate();
-			checkForZeros();
-			printProgress();
+		if (bitsAdjustment == 0) {
+			for (; chunk < lastChunkToCheckZeros; chunk++) {
+				aggregateAligned();
+				checkForZeros();
+				printProgress();
+			}
+		} else {
+			for (; chunk < lastChunkToCheckZeros; chunk++) {
+				aggregateBitAdjusted();
+				checkForZeros();
+				printProgress();
+			}
 		}
 		// Now we're definitely done checking for zeros (and might also be done doubling)
 		
@@ -349,13 +402,13 @@ void findAndPrintZeros() {
 		if (bitsAdjustment == 0) {
 			for (; chunk < secondLimit; chunk++) {
 				copyAlongToDoubleCurrentPos_macro(expRegCol, chunk, chunksAdjustment);
-				aggregate();
+				aggregateAligned();
 				printProgress();
 			}
 		} else {
 			for (; chunk < secondLimit; chunk++) {
 				copyAlongToDoubleCurrentPos_macroBitAdjusted(expRegCol, chunk, chunksAdjustment, bitsAdjustment, bitsAdjustmentComplement);
-				aggregate();
+				aggregateBitAdjusted();
 				printProgress();
 			}
 		}
@@ -374,10 +427,18 @@ void findAndPrintZeros() {
 		}
 		
 		// Otherwise, if we're done doubling, continue along with the rest of the aggregating
-		for (; chunk < lastChunkToAggregate; chunk++) {
-			aggregate();
-			printProgress();
+		if (bitsAdjustment == 0) {
+			for (; chunk < lastChunkToAggregate; chunk++) {
+				aggregateAligned();
+				printProgress();
+			}
+		} else {
+			for (; chunk < lastChunkToAggregate; chunk++) {
+				aggregateBitAdjusted();
+				printProgress();
+			}
 		}
+		
 		
 		#undef aggregate
 		#undef checkForZeros
