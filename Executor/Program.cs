@@ -53,7 +53,7 @@ namespace Executor
 	//In the M=2, S=3 case, every multiple of 3 is unreachable by any
 	//expression/sequence-of-steps of the required type. However, there are also
 	//some other numbers that cannot be reached (here usually called non-trivial zeros).
-	//The non-trivial zeros less than 1 billion are:
+	//The non-trivial zeros less than 1.5 trillion are:
 	//	113
 	//	226
 	//	985
@@ -71,6 +71,15 @@ namespace Executor
 	//	59823937
 	//	119647874
 	//	521638217
+	//	1043276434
+	//	1699132379
+	//	3398264758
+	//	14755320499
+	//	29510640998
+	//	128502917195
+	//	257005834490
+	//	419868489953
+	//	839736979906
 	//This is approximately exponential, but not exactly. The numbers appear to come in pairs,
 	//with the second being double the first.
 	//This sequence does not appear to be in the OEIS or easily visible in any sequences that are there,
@@ -87,7 +96,7 @@ namespace Executor
 	
 	//For other numbers for M and S, many of the sequences seem to become sparser over time, i.e.
 	//the average value appears to approach zero. For M=2, S=3, the sequence appears to grow roughly
-	//logarithmically.
+	//logarithmically or something similar (eg. square root is also possible) - less than linear anyway.
 	//For the cases where M>0 and S=1, the sequence starts contant, then at every multiple of M increases
 	//by 1, then at every multiple of M^2 the amount it's increasing by each time steps up by 1, then
 	//at every multiple of M^3 the amount the increase is stepping up by every M^2 increases by 1, and so
