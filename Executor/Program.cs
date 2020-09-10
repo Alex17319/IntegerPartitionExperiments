@@ -93,7 +93,7 @@ namespace Executor
 	//	1, 3, 0, 2, 1, 0, 1, 1, 0, 3, 1, 0, 2, 2, 0, 3, 1, 0,
 	//	1, 2, 0, 5, 0, 0, 1, 3, 0, 1, 1, 0, 3, 2, 0, 3, 2, 0,
 	//	2, 5, 0, 2, 3, 0, 2, 3, 0, 4, 2, 0, 3, 3, 0, 2, 2, 0...
-	
+
 	//For other numbers for M and S, many of the sequences seem to become sparser over time, i.e.
 	//the average value appears to approach zero. For M=2, S=3, the sequence appears to grow roughly
 	//logarithmically or something similar (eg. square root is also possible) - less than linear anyway.
@@ -105,6 +105,37 @@ namespace Executor
 	//which have some details of other ways to arrive at the same sequence.
 	//Note: This is incorrect for the first term, where this description uses a 1 but the actual sequence
 	//uses a 0, but that shouldn't be a big issue.
+
+	//Notes from googling the (large) zeros:
+	//Done all from 6880121 to 839736979906
+	//	128502917195 = 2^35 + 3^23
+	//	source: https://twitter.com/0916_imuhata/status/1244503257994547200?s=20 (then confirmed)
+	//	
+	//	14755320499 = 3^j + 4^k
+	//	source: https://oeis.org/A226807/b226807.txt
+	//	
+	//	1043276434 is a sum of at most 5 positive 9th powers
+	//	source: http://oeis.org/A004889/b004889.txt
+	//	
+	//	521638217 = 8^n + 9^n
+	//	source: http://oeis.org/A074624
+	//	521638217 = (n+1)^9 + n^9
+	//	source: https://oeis.org/A036087
+	//	
+	//	119647874 is a sum of at most 5 nonzero 8th powers
+	//	source: http://oeis.org/A004878/b004878.txt
+	//	
+	//	59823937 = (n+1)^8 + n^8
+	//	source: https://oeis.org/A036086
+	//	
+	//	13760242 is a sum of 4 positive 7th powers
+	//	source: https://oeis.org/A003371/b003371.txt
+	//	13760242 is a sum of at most 5 positive 7th powers
+	//	source: https://oeis.org/A004867/b004867.txt
+	//	
+	//	6880121 has loads of matches even just in the OEIS
+	//	
+	//	Potentially useful site: http://sequencedb.net/index.html
 
 	class Program
 	{

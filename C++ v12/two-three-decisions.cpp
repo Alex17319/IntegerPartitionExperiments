@@ -261,8 +261,8 @@ void printZeros(uint64_t chunk, uint64_t printOffset) {
 
 void findAndPrintZeros() {
 	//uint64_t estimatedMem = estimateMemAvailable();
-	uint64_t estimatedMem = 2000000000L;
-	//uint64_t estimatedMem = 20000000L;
+	//uint64_t estimatedMem = 2000000000L;
+	uint64_t estimatedMem = 100000000L;
 	//uint64_t estimatedMem = 80000000000L;
 	
 	// Use 90% of the approx. available memory, rounded down to a multiple of 2
