@@ -1,0 +1,4 @@
+[BITS ARE IN ORIGINAL ORDER (MOST TO LEAST SIGNIFICANT) SO LINES CANNOT BE CONCATENATED TOGETHER]
+--------:--------:--------:-------#:--------:-------#:-------#:---#-##- appears at 0
+--------:--------:--------:--------:--------:--------:--------:-------# appears at all 2^n
+Done.
