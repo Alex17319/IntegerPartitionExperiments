@@ -72,3 +72,5 @@ void spreadAndOrBits(uint64_t x, uint64_t *low, uint64_t *high) {
 	*low |= xLow;
 	*high |= xHigh;
 }
+
+void 

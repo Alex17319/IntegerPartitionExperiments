@@ -1,3 +1,1 @@
 The approach here is to work out how to omit some columns, e.g. the first one just has a 1 at every power of 2, and zeroes everywhere else, so can be computed as needed rather than needing to be stored. V10 makes this partially obsolete, however it still may be worth coming back to as finding patterns to exploit in order to calculate each column may well lead to a better understanding overall.
-
-This won't be modified further (workings for computing some columns are half done atm), see V9-extended instead.

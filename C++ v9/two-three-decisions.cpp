@@ -266,6 +266,91 @@ void copyAlongToDoubleCurrentPos(struct expansionRegisterColumn *expRegCol, uint
 	expRegCol->size = max(expRegCol->size, minSizeAfterWrite);
 }
 
+void populateColOneChunk(uint64_t curValue, uint64_t* chunkAggregate) {
+	uint64_t chunkContents = 0;
+	uint64_t chunkNum = curValue / CHUNK_BITS;
+	if (chunkNum == 0) { // full value when chunk number == 0
+		chunkContents = 0b00000001'00000000'00010001'01001001'00010000'01011001'01001101'10110000;
+	} else {
+		// when chunk number == 1
+		if (chunkNum == 1) {
+			chunkContents |= 0b00000000'00000000'00000000'00000000'00000000'00000001'00000000'00000000;
+		}
+		
+		// whenever chunk number == 2^n + 1 for some non-negative integer n
+		if (isPowerOf2_safe(chunkNum - 1)) { // isPowerOf2_safe() is fine for input zero, i.e. when chunkNum == 1
+			chunkContents |= 0b00000000'00000000'00000000'00000001'00000000'00000000'00000000'00000000;
+		}
+		
+		// whenever chunk number == 2^n for some non-negative integer n
+		if (isPowerOf2(chunkNum)) { // isPowerOf2() breaks for zero but we've already checked it's not zero
+			chunkContents |= 0b00000000'00000001'00000000'00000000'00000001'00000000'00010000'01001001;
+			return; // already set the LSB ON, so no need to check the next rule, which just does that
+		}
+		
+		// whenever chunk number == 2^n + 3*2^m where n >= m for some non-negative integers n and m
+		
+		// This condition corresponds to chunk numbers of any of the following forms:
+		//  (1) ...1...
+		//  (2) ...10...11...
+		//  (3) ...111...
+		//  (4) ...101...
+		// where ... means '0 repeated zero or more times'
+		// The first type corresponds to he power of 2, which we've already checked
+		// For other types, we clear the least significant bit & extract what it was,
+		// do the same again, and then check if either:
+		//  - The two extracted bits are adjacent to each other, and what's left over has
+		//    a single bit on (types 2 & 3).
+		//  - The two extracted bits are separated by exactly one zero, and what's left
+		//    over is just zero (type 4).
+		
+		uint64_t oneBitCleared = chunkNum & (chunkNum - 1); // clear the least significant 1 bit
+		uint64_t clearedBit1 = chunkNum & !oneBitCleared;   // extract just the bit that was cleared
+		uint64_t twoBitsCleared = oneBitCleared & (oneBitCleared - 1);
+		uint64_t clearedBit2 = oneBitCleared & !twoBitsCleared;
+		
+		// if the two least significant ON bits in chunkNum are adjacent, then adjMask
+		// will contain exactly 1 ON bit, i.e. it will be a power of 2.
+		uint64_t adjMask = clearedBit1 & (clearedBit2 >> 1);
+		
+		// Here we start with:
+		// isPowerOf2_safe(adjMask) && isPowerOf2_safe(twoBitsCleared) || twoBitsCleared == 0 && isPowerOf2_safe(oneApartMask)
+		// Where oneApartMask = clearedBit1 & (clearedBit2 >> 2), so the same thing as adjMask but checking
+		// if they're separated by a single OFF bit
+		// 
+		// Then simplify:
+		//
+		// Note: isPowerOf2_safe(x) is implemented as: x && !(x & (x - 1))
+		// The part in brackets corresponds to "x, with the last ON bit cleared" (relevant for some of the simplification)
+		// 
+		// isPowerOf2_safe(adjMask) && isPowerOf2_safe(twoBitsCleared) || twoBitsCleared == 0 && isPowerOf2_safe(oneApartMask)
+		// (adjMask && !(adjMask & (adjMask - 1))) && (twoBitsCleared && !(twoBitsCleared & (twoBitsCleared - 1))) || twoBitsCleared == 0 && (oneApartMask && !(oneApartMask & (oneApartMask - 1)))
+		// adjMask && !(adjMask & (adjMask - 1)) && twoBitsCleared && !(twoBitsCleared & (twoBitsCleared - 1)) || !twoBitsCleared && oneApartMask && !(oneApartMask & (oneApartMask - 1))
+		// twoBitsCleared && adjMask && !(adjMask & (adjMask - 1)) && !(twoBitsCleared & (twoBitsCleared - 1)) || !twoBitsCleared && oneApartMask && !(oneApartMask & (oneApartMask - 1))
+		// twoBitsCleared && adjMask && !(adjMask & (adjMask - 1) | twoBitsCleared & (twoBitsCleared - 1)) || !twoBitsCleared && oneApartMask && !(oneApartMask & (oneApartMask - 1))
+		// twoBitsCleared && adjMask && !(adjMask & (adjMask - 1) || twoBitsCleared & (twoBitsCleared - 1)) || !twoBitsCleared && oneApartMask && !(oneApartMask & (oneApartMask - 1))
+		// 
+		// Now, notice that twoBitsCleared appears at the start of one one side of the ||, while
+		// !twoBitsCleared appears at the start of the other side. This means we can check
+		// twoBitsCleared first, and only need to compute oneApartMask if it's false
+		// 
+		// So we have:
+		if (twoBitsCleared) {
+			if (adjMask && !(adjMask & (adjMask - 1) || twoBitsCleared & (twoBitsCleared - 1))) {
+				chunkContents |= 1;
+			}
+		} else {
+			uint64_t oneApartMask = clearedBit1 & (clearedBit2 >> 2);
+			
+			if (oneApartMask && !(oneApartMask & (oneApartMask - 1))) {
+				chunkContents |= 1;
+			}
+		}
+		
+	}
+	chunkAggregate* |= chunkContents;
+}
+
 void findAndPrintZeros(uint64_t startSize) {
 	if (startSize < 1) {
 		throw out_of_range("startSize < 1");
@@ -290,31 +375,10 @@ void findAndPrintZeros(uint64_t startSize) {
 		}
 		
 		//i == 1:
-		{
-			uint64_t chunkContents = 0;
-			if (curValue / CHUNK_BITS == 0) { // full value when chunk number == 0
-				chunkContents = 0b00000001'00000000'00010001'01001001'00010000'01011001'01001101'10110000;
-			} else {
-				// when chunk number == 1
-				if (curValue / CHUNK_BITS == 1) {
-					chunkContents |= 0b00000000'00000000'00000000'00000000'00000000'00000001'00000000'00000000;
-				}
-				// whenever chunk number == 2^n for some non-negative integer n
-				if (isPowerOf2(curValue / CHUNK_BITS)) {
-					chunkContents |= 0b00000000'00000001'00000000'00000000'00000001'00000000'00010000'01001001;
-				}
-				// whenever chunk number == 2^n + 1 for some non-negative integer n
-				if (isPowerOf2(curValue / CHUNK_BITS - 1)) {
-					chunkContents |= 0b00000000'00000000'00000000'00000001'00000000'00000000'00000000'00000000;
-				}
-				// whenever chunk number == 2^n + 3*2^m where n >= m for some non-negative integers n and m
-				if (TODO) {
-					chunkContents |= 1;
-				}
-				
-			}
-			chunkAggregate |= chunkContents;
-		}
+		populateColOneChunk(curValue, &chunkAggregate);
+		
+		// TODO: Currently I don't think the values in col 1 are used in any way to affect col 2,
+		// they just contribute to the aggregate. For col 0 this is fine, but not col 1 (unless we compute col 2 of course).
 		
 		for (int i = 2; i < expReg.size(); i++) {
 			#define currentCol (&(expReg[i])) //can't store a pointer as it'll be invalidated if the vector grows (in copyAlongByPowerOfThree)
