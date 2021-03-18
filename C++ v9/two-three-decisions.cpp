@@ -304,10 +304,11 @@ void populateColOneChunk(uint64_t curValue, uint64_t* chunkAggregate) {
 		//  - The two extracted bits are separated by exactly one zero, and what's left
 		//    over is just zero (type 4).
 		
+		// source: http://aggregate.org/MAGIC/#Least%20Significant%201%20Bit
 		uint64_t oneBitCleared = chunkNum & (chunkNum - 1); // clear the least significant 1 bit
-		uint64_t clearedBit1 = chunkNum & !oneBitCleared;   // extract just the bit that was cleared
+		uint64_t clearedBit1 = chunkNum ^ oneBitCleared;    // extract just the bit that was cleared (the only thing that changed)
 		uint64_t twoBitsCleared = oneBitCleared & (oneBitCleared - 1);
-		uint64_t clearedBit2 = oneBitCleared & !twoBitsCleared;
+		uint64_t clearedBit2 = oneBitCleared ^ twoBitsCleared;
 		
 		// if the two least significant ON bits in chunkNum are adjacent, then adjMask
 		// will contain exactly 1 ON bit, i.e. it will be a power of 2.
