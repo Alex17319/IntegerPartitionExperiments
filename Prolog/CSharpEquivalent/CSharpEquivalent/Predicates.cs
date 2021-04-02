@@ -23,7 +23,7 @@ namespace CSharpEquivalent
 			=> Write(num)
 			&& Write(": ")
 			&& (reachable(m, s, num) ? Write("reachable") : Write("unreachable"))
-			&& NL;
+			&& NL();
 
 		public static bool testNums(int m, int s, IImmutableStack<int> nums)
 			=> !nums.IsEmpty
@@ -39,7 +39,7 @@ namespace CSharpEquivalent
 			);
 
 		public static bool testZero(int m, int s, int num)
-			=> (reachable(m, s, num) ? false : Write(num) && NL)
+			=> (reachable(m, s, num) ? false : Write(num) && NL())
 			&& false;
 
 		public static bool reachable(int m, int s, int num)
